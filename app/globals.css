@@ -148,3 +148,24 @@ html, body {
     display: none;
   }
 }
+
+
+@layer utilities {
+  .animate-slide-up {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: slideUp 0.6s ease-out forwards;
+  }
+
+  .delay-100 { animation-delay: 0.1s; }
+  .delay-200 { animation-delay: 0.2s; }
+  .delay-300 { animation-delay: 0.3s; }
+  .delay-400 { animation-delay: 0.4s; }
+
+  @keyframes slideUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}

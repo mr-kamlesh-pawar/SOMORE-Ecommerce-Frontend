@@ -1,56 +1,44 @@
 export const  testinomials = [
     {
         id:1,
-        name:'John doe',
+        name:'Kamlesh Pawar',
         image:'/images/people/person.jpg',
-        designation:'CEO, Company Inc.',
-        content: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras ac
-        orci ac lorem accumsan tristique. Nullam ac tortor a sem tempor
-        faucibus id quis ipsum.`
+        designation:'Pune, Maharashtra',
+        content: `Using Organic Moinga Powder for a month. Awesome product overall. You can not only consume it but also use it for your skin and hair. Made my hair so good and skin acne free. Recommend it to everyone. Saptamveda Moringa Powder.`
     },
     {
         id:2,
-        name:'Shohag miah',
+        name:'Siddesh Patole',
         image:'/images/people/person.jpg',
-        designation:'CEO, Binarybard Inc.',
-        content: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras ac
-        orci ac lorem accumsan tristique. Nullam ac tortor a sem tempor
-        faucibus id quis ipsum.`
+        designation:'Hadapsar, Maharashtra',
+        content: `I am a dedicated customer of SAPTAMVEDA. I have been using their products since 6 months. Amazing products with wholesome goodness. I am using moringa, wheatgrass and curcumin powder. Great products!`
     },
     {
         id:3,
-        name:'janes',
+        name:'Mayur Pawar',
         image:'/images/people/person.jpg',
-        designation:'CTO, Company Inc.',
-        content: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras ac
-        orci ac lorem accumsan tristique. Nullam ac tortor a sem tempor
-        faucibus id quis ipsum.`
+        designation:'Dhule, Maharashtra',
+        content: `I have been using Saptamveda products for almost 3 months . I am using Moringa Tablets and wheatgrass powder. All the products are organic, pure and natural. Much better than other non organic products.`
     },
     {
         id:4,
-        name:'John doe',
+        name:'Darshan Wagh',
         image:'/images/people/person.jpg',
-        designation:'CEO, Company Inc.',
-        content: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras ac
-        orci ac lorem accumsan tristique. Nullam ac tortor a sem tempor
-        faucibus id quis ipsum.`
+        designation:'Nashik, Maharashtra',
+        content: `Using Organic Moinga Powder for a month. Awesome product overall. You can not only consume it but also use it for your skin and hair. Made my hair so good and skin acne free. Recommend it to everyone. Saptamveda Moringa Powder.`
     },
     {
         id:5,
-        name:'John doe',
+        name:'Abhishek Dangale',
         image:'/images/people/person.jpg',
-        designation:'CEO, Company Inc.',
-        content: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras ac
-        orci ac lorem accumsan tristique. Nullam ac tortor a sem tempor
-        faucibus id quis ipsum.`
+        designation:'Pimpri Chichwad, Maharashtra',
+        content: `Using Organic Moinga Powder for a month. Awesome product overall. You can not only consume it but also use it for your skin and hair. Made my hair so good and skin acne free. Recommend it to everyone. Saptamveda Moringa Powder.`
     },
     {
         id:6,
-        name:'John doe',
+        name:'Apeksha Fulsunder',
         image:'/images/people/person.jpg',
-        designation:'CEO, Company Inc.',
-        content: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras ac
-        orci ac lorem accumsan tristique. Nullam ac tortor a sem tempor
-        faucibus id quis ipsum.`
+        designation:'Nashik, Maharashtra',
+        content: `I have been using Saptamveda products for almost 3 months . I am using Moringa Tablets and wheatgrass powder. All the products are organic, pure and natural. Much better than other non organic products.`
     },
 ]

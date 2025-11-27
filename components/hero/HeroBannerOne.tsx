@@ -1,104 +1,152 @@
 "use client";
-import React from "react";
+
+import React, { useState, useEffect } from "react";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
+  type CarouselApi,
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import Image from "next/image";
-import { Button } from "../ui/button";
-import { ArrowRight, Rocket } from "lucide-react";
-import { motion } from "framer-motion";
-import { bannerData } from "@/data/banner/bannerData";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { bannerData } from "@/data/banner/bannerData";
 
-const HeroBannerOne = () => {
-  // get banners data from server then display here
+export default function HeroBannerOne() {
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+
+  // Sync dots with slider
+  useEffect(() => {
+    if (!api) return;
+
+    setCurrent(api.selectedScrollSnap());
+
+    api.on("select", () => setCurrent(api.selectedScrollSnap()));
+  }, [api]);
 
   return (
-    <section className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 ">
-      <div className="max-w-screen-xl mx-auto py-15 px-4 md:px-8 ">
+    <section className="relative w-full bg-white">
+      {/* BANNER CONTAINER - Shopify Style (auto height) */}
+      <div className="relative w-full overflow-hidden">
         <Carousel
+          setApi={setApi}
+          opts={{ loop: true }}
           plugins={[
             Autoplay({
-              delay: 5000,
+              delay: 4000,
+              stopOnInteraction: false,
             }),
           ]}
+          className="w-full"
         >
-          <CarouselContent className="space-x-2 ml-1">
-            {bannerData.map((data) => (
-              <CarouselItem
-                key={data.title}
-                className={`relative rounded-xl flex flex-col-reverse md:flex-row items-center justify-evenly p-2`}
-              >
-                <motion.div
-                  initial={{ y: -100, opacity: 0 }}
-                  whileInView={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 1, delay: 0.1 }}
-                  className="text-center justify-center space-y-4"
-                >
-                  <p className="flex items-center justify-center gap-4 -mb-4 text-xl font-bold rounded-xl  text-rose-600">
-                    <Rocket className="animate-bounce" size={40} />
-                    <span className="text-blue-800">{data.discountText}</span>
-                  </p>
-                  <h2
-                    className={cn(
-                      "text-3xl md:text-5xl max-w-96 mx-auto font-bold break-words"
-                    )}
-                  >
-                    {data.title}
-                  </h2>
-                  <p className="max-w-96 mx-auto leading-6">
-                    {data.description}
-                  </p>
-                  <Link href={data.link} className="block ">
-                    <Button
-                      size={"lg"}
-                      className="text-xl p-3 md:p-8 rounded-full gap-2 md:gap-4 mb-4"
-                    >
-                      <ArrowRight className="text-rose-500" /> {data.button}
-                    </Button>
-                  </Link>
-                </motion.div>
+          <CarouselContent>
+            {bannerData.map((slide, index) => (
+              <CarouselItem key={index}>
+                <Link href={slide.link ?? "#"} className="block w-full">
+                 
+                  <div className="relative w-full 
+  h-[40vh] sm:h-[60vh] md:h-[75vh] 
+  lg:h-[110vh]"
+>
 
-                <motion.div
-                  initial={{ x: 200, opacity: 0 }}
-                  whileInView={{ x: 0, opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.1 }}
-                >
-                  {/* main product image */}
-                  <Image
-                    className="bg-transparent rotate-6 relative z-50 object-contain"
-                    src={data.images[0]}
-                    width={500}
-                    height={500}
-                    alt="banner image"
-                  />
-                </motion.div>
-                {/* Animated Sparkles */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.5 }}
-                  className="absolute right-[10rem] top-[8rem] flex items-center justify-center pointer-events-none z-0"
-                >
-                  <div className="absolute w-48 h-48 bg-yellow-400 rounded-full animate-blob1"></div>
-                  <div className="absolute w-48 h-48 bg-red-400 rounded-full animate-blob2"></div>
-                  <div className="absolute w-48 h-48 bg-blue-400 rounded-full animate-blob3"></div>
-                </motion.div>
+                    <Image
+                      src={slide.images[0]}
+                      fill
+                      priority={index === 0}
+                      alt={slide.title}
+                     className="w-full h-full
+  object-contain
+  lg:object-cover
+"
+
+                    />
+                  </div>
+
+                  
+                </Link>
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="left-5" />
-          <CarouselNext className="right-5" />
+
+       
+
+        
         </Carousel>
+      </div>
+
+      {/* DOTS - BELOW THE BANNER (Shopify Exact Behaviour) */}
+      <div className="w-full flex justify-center py-2 lg:py-4 ">
+           <svg className="w-4 h-4 rotate-90 mx-2" viewBox="0 0 10 6">
+              <path
+                fill="currentColor"
+                d="M9.354.646a.5.5 0 0 0-.708 0L5 4.293 1.354.646a.5.5 0 0 0-.708.708l4 4a.5.5 0 0 0 .708 0l4-4a.5.5 0 0 0 0-.708"
+              />
+            </svg>
+        <div className="flex gap-3 slideshow__control-wrapper">
+          {bannerData.map((_, i) => {
+            const active = i === current;
+            return (
+              <>
+              <button
+                key={i}
+                onClick={() => api?.scrollTo(i)}
+                aria-label={`Go to slide ${i + 1}`}
+                aria-current={active ? "true" : undefined}
+                className={`
+                  slider-counter__link slider-counter__link--dots
+                  ${active ? "slider-counter__link--active" : ""}
+                  `}
+                  >
+                <span className="dot"></span>
+              </button>
+                </>
+            );
+          })}
+        </div>
+
+           <svg className="w-4 h-4 -rotate-90 mx-2" viewBox="0 0 10 6">
+              <path
+                fill="currentColor"
+                d="M9.354.646a.5.5 0 0 0-.708 0L5 4.293 1.354.646a.5.5 0 0 0-.708.708l4 4a.5.5 0 0 0 .708 0l4-4a.5.5 0 0 0 0-.708"
+              />
+            </svg>
+
+        <style jsx>{`
+          .slider-counter__link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+          }
+
+          .dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 9999px;
+            background: rgba(18, 18, 18, 0.25);
+            transition: transform 0.25s ease, background 0.25s ease;
+          }
+
+          .slider-counter__link--active .dot {
+            background: rgba(18, 18, 18, 0.95);
+            transform: scale(1.25);
+          }
+
+          :global(.dark) .dot {
+            background: rgba(255, 255, 255, 0.3);
+          }
+
+          :global(.dark) .slider-counter__link--active .dot {
+            background: rgba(255, 255, 255, 1);
+          }
+        `}</style>
       </div>
     </section>
   );
-};
-
-export default HeroBannerOne;
+}

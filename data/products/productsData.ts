@@ -19,7 +19,7 @@ export const productsData = [
         content: "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Distinctio voluptatem aliquam reprehenderit debitis quidem accusantium",
         rating:4,
         author: "Shohag miah",
-        image: "/images/people/person.jpg",
+        image: "/images/products/moringa.png",
         date: new Date(),
       },
     ],

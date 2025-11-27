@@ -12,18 +12,14 @@ import Autoplay from "embla-carousel-autoplay";
 
 const TestimonialsSection = ({ textCenter }: { textCenter: boolean }) => {
   return (
-    <div className="py-16 bg-gray-200 dark:bg-gray-800">
+    <div className="py-16 bg-[#F8F8F8] dark:bg-gray-800">
       <div className="max-w-screen-xl mx-auto px-4 md:px-8">
-        <h2
-          className={cn(
-            "text-3xl md:text-5xl  font-bold text-gray-900 dark:text-white mb-12 p-2 w-fit ",
-            textCenter
-              ? "text-center border-l-4 border-l-rose-500 mx-auto "
-              : "text-start border-l-4 border-l-rose-500"
-          )}
-        >
-          What Our Customers Say
+
+        <h2 className="text-center text-2xl md:text-4xl font-bold text-black tracking-wide mb-6 md:mb-10">
+          Here's What Our Customers Have To Say About Us
         </h2>
+          
+
         <Carousel
           plugins={[
             Autoplay({
@@ -37,12 +33,22 @@ const TestimonialsSection = ({ textCenter }: { textCenter: boolean }) => {
                 key={testi.id}
                 className="md:basis-1/3 pl-2 md:pl-4"
               >
-                <div className="bg-white dark:bg-gray-700 rounded-lg overflow-hidden shadow-lg">
-                  <div key={testi.id} className="p-6">
-                    <p className="text-gray-700 dark:text-gray-300 mb-4 ">
-                      {testi.content}
+                {/* FIXED HEIGHT CARD */}
+                <div
+                  className="
+                    bg-gray-100 dark:bg-gray-700 
+                    rounded-lg overflow-hidden shadow-lg
+                    flex flex-col
+                  "
+                >
+                  {/* CONTENT SCROLL AREA */}
+                  <div className="p-6 flex flex-col flex-1 overflow-y-auto space-y-4">
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                      {testi.content.substring(0,210)+"...."}
                     </p>
-                    <div className="flex items-center mb-4">
+
+                    {/* USER INFO */}
+                    <div className="flex items-center mt-auto">
                       <Image
                         src={testi.image}
                         alt="User"
@@ -66,7 +72,6 @@ const TestimonialsSection = ({ textCenter }: { textCenter: boolean }) => {
           </CarouselContent>
         </Carousel>
 
-        {/* Repeat for more testimonials */}
       </div>
     </div>
   );
