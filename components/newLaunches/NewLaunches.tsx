@@ -3,6 +3,17 @@
 import Image from "next/image";
 import Link from "next/link";
 
+interface IncomingProduct {
+  id: number | string;
+  slug: string;
+  title: string;
+  price: number;
+  compareAtPrice?: number;
+  badge?: string;
+  isHome: boolean;
+  images: string[];
+}
+
 interface ProductCard {
   id: number | string;
   title: string;
@@ -11,11 +22,12 @@ interface ProductCard {
   badge?: string;
   image: string;
   link: string;
+  isHome: boolean;
 }
 
 interface Props {
   title?: string;
-  products: ProductCard[];
+  products: IncomingProduct[];
   viewAllLink?: string;
 }
 
@@ -24,6 +36,21 @@ export default function NewLaunches({
   products,
   viewAllLink = "#",
 }: Props) {
+  // Convert incoming data → component-friendly format
+  const mappedProducts: ProductCard[] = products.map((item) => ({
+    id: item.id,
+    title: item.title,
+    price: `₹${item.price}`,
+    compareAtPrice: item.compareAtPrice ? `₹${item.compareAtPrice}` : undefined,
+    badge: item.badge,
+    image: item.images?.[0] || "",
+    link: `/products/${item.slug}`,
+    isHome: item.isHome,
+  }));
+
+  // ✅ Only show products with isHome = true
+  const homeProducts = mappedProducts.filter((p) => p.isHome);
+
   return (
     <section className="w-full bg-white py-6 md:py-10">
       <div className="max-w-[1600px] mx-auto px-3 md:px-6">
@@ -34,19 +61,10 @@ export default function NewLaunches({
         </h2>
 
         {/* PRODUCT GRID */}
-        <div
-          className="
-            grid 
-            grid-cols-2 
-            sm:grid-cols-3 
-            lg:grid-cols-4 
-            gap-y-10 
-            gap-x-4
-          "
-        >
-          {products.map((item) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-y-10 gap-x-4">
+          {homeProducts.map((item, index) => (
             <Link key={item.id} href={item.link} className="group text-center">
-              
+
               {/* IMAGE */}
               <div className="relative w-full mx-auto aspect-square">
                 <Image
@@ -57,13 +75,8 @@ export default function NewLaunches({
                   sizes="(max-width:768px) 50vw, (max-width:1200px) 33vw, 25vw"
                 />
 
-                {/* Badge */}
-                {item.badge && (
-                  <span className="
-                    absolute top-2 left-2 
-                    bg-green-700 text-white text-xs 
-                    px-2 py-1 rounded
-                  ">
+                {index === 3 && item.badge && (
+                  <span className="absolute top-2 left-2 bg-green-700 text-white text-xs px-2 py-1 rounded">
                     {item.badge}
                   </span>
                 )}
@@ -86,9 +99,12 @@ export default function NewLaunches({
                     </span>
                   </div>
                 ) : (
-                  <span className="text-sm font-semibold text-black">{item.price}</span>
+                  <span className="text-sm font-semibold text-black">
+                    {item.price}
+                  </span>
                 )}
               </div>
+
             </Link>
           ))}
         </div>
@@ -97,11 +113,7 @@ export default function NewLaunches({
         <div className="flex justify-center mt-10">
           <Link
             href={viewAllLink}
-            className="
-              bg-black text-white px-10 py-3 
-              rounded-md text-sm font-medium 
-              hover:bg-gray-900 transition
-            "
+            className="bg-black text-white px-10 py-3 rounded-md text-sm font-medium hover:bg-gray-900 transition"
           >
             View all
           </Link>

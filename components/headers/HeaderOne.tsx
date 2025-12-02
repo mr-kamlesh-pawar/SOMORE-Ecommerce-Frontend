@@ -97,7 +97,7 @@ const HeaderOne = () => {
           >
             <ShoppingCart size={22} />
             <span className="absolute -top-1 -right-1 bg-black text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-              2
+              1
             </span>
           </Link>
         </div>

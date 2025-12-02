@@ -4,6 +4,7 @@ import CheckoutBtn from "../buttons/CheckoutBtn";
 import useCartStore from "@/store/cartStore";
 import Loader from "../others/Loader";
 import { formatPrice } from "@/lib/formatPrice";
+import { useCart } from "@/store/hooks/useCart";
 
 const OrderSummaryForCart = () => {
 
@@ -14,7 +15,8 @@ const OrderSummaryForCart = () => {
   },[])
 
   
-  const {getTotalPrice,getTax,getShippingFee,getTotalAmount} = useCartStore()
+ const { getTotalPrice, getTax, getShippingFee, getTotalAmount } = useCart();
+
 
   
   if(!isMounted){

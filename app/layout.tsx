@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import ModalProvider from "@/providers/ModalProvider";
+import { CartProvider } from "@/store/context/CartContext";
 
 
 const fontSans = FontSans({
@@ -36,7 +37,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+
+             <CartProvider>{children}</CartProvider>
+       
           <ModalProvider />
         </ThemeProvider>
       </body>

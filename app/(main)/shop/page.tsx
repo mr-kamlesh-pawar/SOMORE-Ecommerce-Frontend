@@ -1,5 +1,6 @@
 import ShopPageOne from "@/components/pages/shop-pages/ShopPageOne";
 import ShopPageTwo from "@/components/pages/shop-pages/ShopPageTwo";
+import { newLaunchProducts } from "@/data/NewLaunches/newLaunchProducts";
 import { SearchParams } from "@/types";
 import React from "react";
 
@@ -10,7 +11,7 @@ function ShopPage({
 }) {
   return (
     <div>
-      <ShopPageOne searchParams={searchParams} />
+      <ShopPageOne  products={newLaunchProducts}/>
       {/* <ShopPageTwo searchParams={searchParams}/> */}
     </div>
   );

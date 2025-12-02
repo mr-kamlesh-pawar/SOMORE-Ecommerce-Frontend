@@ -1,0 +1,107 @@
+export const reviewsData = {
+  averageRating: 4.81,
+
+  histogram: [
+    { star: 5, count: 110, percent: 84 },
+    { star: 4, count: 17, percent: 13 },
+    { star: 3, count: 4, percent: 3 },
+    { star: 2, count: 0, percent: 0 },
+    { star: 1, count: 0, percent: 0 },
+  ],
+
+  reviews: [
+    {
+      id: 1,
+      rating: 5,
+      title: "Very effective powder...",
+      body: "Moringa jeera powder is the best!",
+      author: "Anindetta Chakraborty",
+      date: "2025-07-13",
+      image: "/images/products/moringa.png"
+    },
+    {
+      id: 2,
+      rating: 2,
+      title: "Wholesome Metabolism Sip",
+      body: "Great for digestion and metabolism. Jeera flavor is nice!",
+      author: "Anita Nair",
+      date: "2025-06-03",
+      image: null,
+    },
+    {
+      id: 3,
+      rating: 5,
+      title: "Pure Energy Sip",
+      body: "Supports digestion and feels cleansing.",
+      author: "Vivek Reddy",
+      date: "2025-06-03",
+    },
+    {
+      id: 4,
+      rating: 5,
+      title: "Nourishing Wellness Tonic",
+      body: "Great for gut health. Added to my soup!",
+      author: "Shalini Patel",
+      date: "2025-06-03",
+    },
+    {
+      id: 5,
+      rating: 4,
+      title: "Fragrant Gut Blend",
+      body: "Helps with bloating. Jeera flavor strong but good.",
+      author: "Pramod Joshi",
+      date: "2025-06-03",
+    },
+    // Add more reviews as needed!!
+
+     {
+      id: 5,
+      rating: 5,
+      title: "Very effective powder...",
+      body: "Moringa jeera powder is the best!",
+      author: "Anindetta Chakraborty",
+      date: "2025-07-13",
+    },
+    {
+      id: 6,
+      rating: 2,
+      title: "Wholesome Metabolism Sip",
+      body: "Great for digestion and metabolism. Jeera flavor is nice!",
+      author: "Anita Nair",
+      date: "2025-06-03",
+      image: null,
+    },
+    {
+      id: 8,
+      rating: 5,
+      title: "Pure Energy Sip",
+      body: "Supports digestion and feels cleansing.",
+      author: "Vivek Reddy",
+      date: "2025-06-03",
+    },
+    {
+      id: 9,
+      rating: 5,
+      title: "Nourishing Wellness Tonic",
+      body: "Great for gut health. Added to my soup!",
+      author: "Shalini Patel",
+      date: "2025-06-03",
+    },
+    {
+      id: 10,
+      rating: 4,
+      title: "Fragrant Gut Blend",
+      body: "Helps with bloating. Jeera flavor strong but good.",
+      author: "Pramod Joshi",
+      date: "2025-06-03",
+    },
+      {
+      id: 15,
+      rating: 5,
+      title: "Very effective powder...",
+      body: "Moringa jeera powder is the best!",
+      author: "Anindetta Chakraborty",
+      date: "2025-07-13",
+    },
+  ],
+};
