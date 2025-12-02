@@ -3,6 +3,7 @@ import CheckoutForm from "@/components/forms/CheckoutForm";
 import CouponCodeForm from "@/components/forms/CouponCodeForm";
 import { Separator } from "@/components/ui/separator";
 import React from "react";
+import CheckoutAddress from "./CheckoutAddress";
 
 const CheckoutPageOne = () => {
   return (
@@ -22,9 +23,9 @@ const CheckoutPageOne = () => {
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                 Shipping Address
               </h2>
-              <CheckoutForm />
+            <CheckoutAddress />
             </div>
-              <CouponCodeForm />
+             
           </div>
           {/* Order Summary */}
           <OrderSummaryForCheckout />

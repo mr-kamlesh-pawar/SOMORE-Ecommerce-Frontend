@@ -24,7 +24,7 @@ const ScrollToTop = () => {
   return (
     <div className="fixed bottom-3 right-3">
       {show && (
-        <Button onClick={handleClick} className="p-4 rounded-full w-16 h-16">
+        <Button onClick={handleClick} className="p-4 rounded-full w-16 h-16 bg-[#063E09]">
           <ArrowUp size={40} className="animate-bounce mt-4" />
         </Button>
       )}

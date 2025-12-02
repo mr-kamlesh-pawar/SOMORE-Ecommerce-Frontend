@@ -61,15 +61,17 @@ const CartItemsDetails = () => {
             />
 
             <Link
-              href={`/shop/${item.id}`}
+              href={`/shop/${item.slug}`}
               className="text-lg font-semibold text-gray-900 dark:text-white hover:opacity-60"
             >
-              {(item.name ?? "").slice(0, 36)}
+             <p> {(item.name ?? "").slice(0, 38)}</p>
+             <p> {(item.name ?? "").slice(38, 100)}</p>
+             
             </Link>
           </div>
 
           {/* PRICE */}
-          <p className="border rounded-md border-green-400 py-1 px-2 text-xl text-green-500">
+          <p className="border rounded-md bg-[#046b09] py-1 px-2 text-xl text-white">
             ₹{formatPrice(item.price)}
           </p>
 

@@ -1,4 +1,5 @@
-'use client'
+"use client";
+
 import React from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,127 +8,73 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 
-// Defined Zod schema for form validation
 const schema = z.object({
-  firstName: z.string().min(3, "First Name is required"),
-  lastName: z.string().min(3, "Last Name is required"),
-  address: z.string().min(5, "Address is required"),
-  phone: z.string().min(8, "Phone is required"),
-  city: z.string().min(3, "City is required"),
-  zip: z.string().min(5, "ZIP Code is required"),
-  country: z.string().min(2, "Country is required"),
+  firstName: z.string().min(3),
+  lastName: z.string().min(3),
+  address: z.string().min(5),
+  phone: z.string().min(8),
+  city: z.string().min(3),
+  zip: z.string().min(3),
+  country: z.string().min(2),
 });
 
-// Defined types for form data
 type FormData = z.infer<typeof schema>;
 
-const CheckoutForm: React.FC = () => {
-  // Initialize React Hook Form
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormData>({
-    resolver: zodResolver(schema),
-  });
+const CheckoutForm = ({ onSave, onCancel }: any) => {
+  const { register, handleSubmit, formState: { errors } } =
+    useForm<FormData>({ resolver: zodResolver(schema) });
 
-  // Handle form submission
   const onSubmit: SubmitHandler<FormData> = (data) => {
-    console.log(data);
+    onSave(data); // pass new address to parent
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="firstName">First Name</Label>
-            <Input
-              id="firstName"
-              {...register("firstName")}
-              className="w-full border border-gray-300 dark:border-gray-700 rounded-lg p-6 focus:outline-none"
-            />
-            {errors.firstName && (
-              <span className="text-red-500">{errors.firstName.message}</span>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="lastName">Last Name</Label>
-            <Input
-              id="lastName"
-              {...register("lastName")}
-              className="w-full border border-gray-300 dark:border-gray-700 rounded-lg p-6 focus:outline-none"
-            />
-            {errors.lastName && (
-              <span className="text-red-500">{errors.lastName.message}</span>
-            )}
-          </div>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4 bg-white rounded-lg shadow">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div>
+          <Label>First Name</Label>
+          <Input {...register("firstName")} />
         </div>
         <div>
-          <Label htmlFor="address">Address</Label>
-          <Input
-            id="address"
-            {...register("address")}
-            className="w-full border border-gray-300 dark:border-gray-700 rounded-lg p-6 focus:outline-none"
-          />
-          {errors.address && (
-            <span className="text-red-500">{errors.address.message}</span>
-          )}
+          <Label>Last Name</Label>
+          <Input {...register("lastName")} />
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="phone">Phone</Label>
-            <Input
-              type="tel"
-              id="phone"
-              {...register("phone")}
-              className="w-full border border-gray-300 dark:border-gray-700 rounded-lg p-6 focus:outline-none"
-            />
-            {errors.phone && (
-              <span className="text-red-500">{errors.phone.message}</span>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="city">City</Label>
-            <Input
-              id="city"
-              {...register("city")}
-              className="w-full border border-gray-300 dark:border-gray-700 rounded-lg p-6 focus:outline-none"
-            />
-            {errors.city && (
-              <span className="text-red-500">{errors.city.message}</span>
-            )}
-          </div>
+      </div>
+
+      <div>
+        <Label>Address</Label>
+        <Input {...register("address")} />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div>
+          <Label>Phone</Label>
+          <Input {...register("phone")} />
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="zip">ZIP Code</Label>
-            <Input
-              id="zip"
-              {...register("zip")}
-              className="w-full border border-gray-300 dark:border-gray-700 rounded-lg p-6 focus:outline-none"
-            />
-            {errors.zip && (
-              <span className="text-red-500">{errors.zip.message}</span>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="country">Country</Label>
-            <Input
-              id="country"
-              {...register("country")}
-              className="w-full p-6 border border-gray-300 dark:border-gray-700 rounded-lg  focus:outline-none"
-            />
-            {errors.country && (
-              <span className="text-red-500">{errors.country.message}</span>
-            )}
-          </div>
+        <div>
+          <Label>City</Label>
+          <Input {...register("city")} />
         </div>
-        <div className="flex items-center justify-end">
-          <Button type="submit">Save</Button>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div>
+          <Label>ZIP Code</Label>
+          <Input {...register("zip")} />
         </div>
-      </form>
-    </div>
+        <div>
+          <Label>Country</Label>
+          <Input {...register("country")} />
+        </div>
+      </div>
+
+      <div className="flex justify-between mt-4">
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button type="submit">Save Address</Button>
+      </div>
+    </form>
   );
 };
 

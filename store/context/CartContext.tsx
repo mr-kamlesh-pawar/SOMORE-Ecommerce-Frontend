@@ -8,8 +8,9 @@ export interface CartItem {
   price: number;
   images: string[];
   quantity: number;
-  slung: string;
+  slug: string;
 }
+
 
 interface CartState {
   cartItems: CartItem[];
@@ -24,11 +25,6 @@ type Action =
   | { type: "APPLY_COUPON"; payload: string }
   | { type: "REMOVE_COUPON" };
 
-const initialState: CartState = {
-  cartItems: [],
-  couponCode: null,
-};
-
 export const CartContext = createContext<any>(null);
 
 function cartReducer(state: CartState, action: Action): CartState {
@@ -37,10 +33,11 @@ function cartReducer(state: CartState, action: Action): CartState {
   switch (action.type) {
     case "ADD_TO_CART":
       const exists = state.cartItems.find((i) => i.id === action.payload.id);
+
       if (exists) {
         updatedItems = state.cartItems.map((i) =>
           i.id === action.payload.id
-            ? { ...i, quantity: i.quantity + 1 }
+            ? { ...i, quantity: i.quantity + action.payload.quantity }
             : i
         );
       } else {
@@ -78,27 +75,28 @@ function cartReducer(state: CartState, action: Action): CartState {
   }
 }
 
-export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(cartReducer, initialState);
+/** Load cart from localStorage BEFORE React renders */
+function loadInitialCart(): CartState {
+  if (typeof window === "undefined") return { cartItems: [], couponCode: null };
 
-  // Load from localStorage
-  useEffect(() => {
+  try {
     const saved = localStorage.getItem("cart-data");
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      dispatch({ type: "CLEAR_CART" });
-      parsed.cartItems.forEach((item: CartItem) =>
-        dispatch({ type: "ADD_TO_CART", payload: item })
-      );
-    }
-  }, []);
+    if (!saved) return { cartItems: [], couponCode: null };
+    return JSON.parse(saved);
+  } catch {
+    return { cartItems: [], couponCode: null };
+  }
+}
 
-  // Save to localStorage
+export function CartProvider({ children }: { children: React.ReactNode }) {
+  const [state, dispatch] = useReducer(cartReducer, undefined, loadInitialCart);
+
+  /** Save cart to localStorage whenever state updates */
   useEffect(() => {
     localStorage.setItem("cart-data", JSON.stringify(state));
   }, [state]);
 
-  /** CALCULATIONS */
+  /** Calculations */
   const getTotalPrice = () =>
     state.cartItems.reduce((acc, i) => acc + i.price * i.quantity, 0);
 

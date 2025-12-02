@@ -161,6 +161,7 @@ export default function ProductDetailsPage() {
         price: product.price,
         images: product.images,
         quantity: qty,
+         slug: product.slug,
       },
     });
 
@@ -168,7 +169,7 @@ export default function ProductDetailsPage() {
 
     setTimeout(() => {
       router.push("/cart");
-    }, 500); // Small delay for toast visibility
+    }, 300); // Small delay for toast visibility
   }}
 >
   Add to cart
@@ -186,6 +187,7 @@ export default function ProductDetailsPage() {
         price: product.price,
         images: product.images,
         quantity: qty,
+         slug: product.slug,
       },
     });
 
@@ -193,11 +195,11 @@ export default function ProductDetailsPage() {
 
     setTimeout(() => {
       router.push("/cart");
-    }, 500);
+    }, 300);
   }}
 >
   BUY NOW
-  <Image src="/upi-icons.png" width={40} height={20} alt="upi" />
+  <Image src="/images/products/upi.png" width={70} height={20} alt="upi" />
 </button>
 
             </div>
@@ -287,8 +289,17 @@ export default function ProductDetailsPage() {
         price: product.price,
         images: product.images,
         quantity: qty,
+         slug: product.slug,
       },
+
+      
     });
+
+     toast.success("Product added to cart!");
+
+    setTimeout(() => {
+      router.push("/cart");
+    }, 300); // Small delay for toast visibility
   }}
     >
       Add to cart

@@ -7,12 +7,23 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import Logo from "../logo/Logo";
 import AnnouncementBar from "./AnnouncementBar";
+import { useRouter } from "next/navigation";
+
 
 const HeaderOne = () => {
   const pathname = usePathname();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
+  const router = useRouter();
+
+    const handleSearch = () => {
+  if (!searchInput.trim()) return; // avoid empty search
+  router.push(`/search?query=${searchInput.trim()}`);
+  setSearchOpen(false);
+};
+
 
   const links = [
     { label: "Shop", link: "/shop" },
@@ -133,25 +144,41 @@ const HeaderOne = () => {
         </div>
       )}
 
-      {/* ---------------- SEARCH MODAL ---------------- */}
-      {searchOpen && (
-        <div className="fixed inset-0 z-50 bg-white dark:bg-slate-950 flex flex-col p-6">
-          <button
-            onClick={() => setSearchOpen(false)}
-            className="self-end mb-4 p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-800"
-          >
-            <X size={22} />
-          </button>
+     {/* ---------------- SEARCH MODAL ---------------- */}
+{searchOpen && (
+  <div className="fixed inset-0 z-50 bg-white dark:bg-slate-950 flex flex-col p-6">
 
-          <div className="max-w-lg mx-auto w-full">
-            <input
-              type="search"
-              placeholder="Search..."
-              className="w-full border rounded-lg px-4 py-3 text-lg outline-none bg-gray-100 dark:bg-slate-800"
-            />
-          </div>
-        </div>
-      )}
+    {/* Close Button */}
+    <button
+      onClick={() => setSearchOpen(false)}
+      className="self-end mb-4 p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-800"
+    >
+      <X size={22} />
+    </button>
+
+    {/* Search Box + Button */}
+    <div className="max-w-lg mx-auto w-full space-y-4">
+
+      <input
+        type="search"
+        placeholder="Search for products..."
+        className="w-full border rounded-lg px-4 py-3 text-lg outline-none bg-gray-100 dark:bg-slate-800"
+        value={searchInput}
+        onChange={(e) => setSearchInput(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+      />
+
+      <button
+        onClick={handleSearch}
+        className="w-full bg-[#063E09] text-white py-3 rounded-lg text-lg font-medium hover:bg-[#096e0e]"
+      >
+        Search
+      </button>
+
+    </div>
+  </div>
+)}
+
     </header>
   );
 };
