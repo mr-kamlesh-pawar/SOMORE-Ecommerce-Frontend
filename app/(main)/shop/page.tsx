@@ -11,7 +11,7 @@ function ShopPage({
 }) {
   return (
     <div>
-      <ShopPageOne  products={newLaunchProducts}/>
+      <ShopPageOne  products={newLaunchProducts} title="All Products"/>
       {/* <ShopPageTwo searchParams={searchParams}/> */}
     </div>
   );

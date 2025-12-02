@@ -13,6 +13,7 @@ interface IncomingProduct {
   compareAtPrice?: number;
   badge?: string;
   images: string[];
+  category: string;
 }
 
 interface ProductCard {
@@ -23,16 +24,19 @@ interface ProductCard {
   badge?: string;
   image: string;
   link: string;
+  category: string
 }
 
 interface Props {
   title?: string;
+  category?: string;
   products: IncomingProduct[];
 }
 
 export default function ShopPageOne({
-  title = "All Products",
+  title,
   products,
+  category
 }: Props) {
   const mappedProducts: ProductCard[] = products.map((item) => ({
     id: item.id,
@@ -40,6 +44,7 @@ export default function ShopPageOne({
     price: item.price,
     compareAtPrice: item.compareAtPrice,
     badge: item.badge,
+    category : item.category,
     image: item.images?.[0] || "",
     link: `/products/${item.slug}`,
   }));
@@ -53,6 +58,11 @@ export default function ShopPageOne({
 
   // ------------------ FILTER LOGIC ------------------
   let displayedProducts = [...mappedProducts];
+
+  if (category) {
+  displayedProducts = displayedProducts.filter((item) => item.category === category);
+}
+
 
   if (showSaleOnly) {
     displayedProducts = displayedProducts.filter((p) => p.badge === "Sale");

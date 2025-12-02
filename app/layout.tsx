@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import ModalProvider from "@/providers/ModalProvider";
 import { CartProvider } from "@/store/context/CartContext";
-
+import { Toaster } from "react-hot-toast";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -33,12 +33,16 @@ export default function RootLayout({
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >
 
-             <CartProvider>{children}</CartProvider>
+             <CartProvider> 
+              {children}
+               <Toaster position="top-center" reverseOrder={false} />
+              
+              </CartProvider>
        
           <ModalProvider />
         </ThemeProvider>

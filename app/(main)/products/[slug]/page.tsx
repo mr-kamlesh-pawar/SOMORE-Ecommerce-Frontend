@@ -10,6 +10,9 @@ import { herbalProducts } from "@/data/herbalProducts/herbalProducts";
 import ReviewSection from "@/components/review/ReviewSection";
 import SuggestedProduct from "@/components/others/SuggestedProduct";
 
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
+
 export default function ProductDetailsPage() {
   const { slug } = useParams();
   const product = newLaunchProducts.find((p) => p.slug === slug);
@@ -17,6 +20,9 @@ export default function ProductDetailsPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [qty, setQty] = useState(1);
   const [showSticky, setShowSticky] = useState(false);
+
+  const router = useRouter();
+
 
   const { dispatch } = useCart();
 
@@ -144,8 +150,9 @@ export default function ProductDetailsPage() {
 
             {/* Buttons */}
             <div className="mt-8 flex gap-4">
-              <button className="w-full border border-black text-black py-4 rounded text-lg font-medium hover:bg-gray-100"
-                onClick={() => {
+             <button
+  className="w-full border border-black text-black py-4 rounded text-lg font-medium hover:bg-gray-100"
+  onClick={() => {
     dispatch({
       type: "ADD_TO_CART",
       payload: {
@@ -156,20 +163,43 @@ export default function ProductDetailsPage() {
         quantity: qty,
       },
     });
-  }}
-              >
-                Add to cart
-              </button>
 
-              <button className="w-full bg-black text-white py-4 rounded text-lg font-semibold hover:bg-gray-900 flex justify-center items-center gap-2">
-                BUY NOW
-                <Image
-                  src="/upi-icons.png"
-                  width={40}
-                  height={20}
-                  alt="upi"
-                />
-              </button>
+    toast.success("Product added to cart!");
+
+    setTimeout(() => {
+      router.push("/cart");
+    }, 500); // Small delay for toast visibility
+  }}
+>
+  Add to cart
+</button>
+
+
+             <button
+  className="w-full bg-black text-white py-4 rounded text-lg font-semibold hover:bg-gray-900 flex justify-center items-center gap-2"
+  onClick={() => {
+    dispatch({
+      type: "ADD_TO_CART",
+      payload: {
+        id: product.id,
+        name: product.title,
+        price: product.price,
+        images: product.images,
+        quantity: qty,
+      },
+    });
+
+    toast.success("Redirecting to checkout...");
+
+    setTimeout(() => {
+      router.push("/cart");
+    }, 500);
+  }}
+>
+  BUY NOW
+  <Image src="/upi-icons.png" width={40} height={20} alt="upi" />
+</button>
+
             </div>
 
             {/* ---------------- SCROLLING DESCRIPTION FIX ---------------- */}

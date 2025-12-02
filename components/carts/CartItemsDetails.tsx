@@ -55,22 +55,22 @@ const CartItemsDetails = () => {
             <Image
               src={item.images?.[0] ?? "/placeholder.png"}
               alt={item.name ?? "Product"}
-              height={64}
-              width={64}
-              className="w-16 h-16 rounded-lg object-cover"
+              height={74}
+              width={74}
+              className="w-20 h-20 rounded-lg object-cover"
             />
 
             <Link
               href={`/shop/${item.id}`}
-              className="text-xl font-semibold text-gray-900 dark:text-white hover:opacity-60"
+              className="text-lg font-semibold text-gray-900 dark:text-white hover:opacity-60"
             >
-              {(item.name ?? "").slice(0, 30)}...
+              {(item.name ?? "").slice(0, 36)}
             </Link>
           </div>
 
           {/* PRICE */}
           <p className="border rounded-md border-green-400 py-1 px-2 text-xl text-green-500">
-            ${formatPrice(item.price)}
+            ₹{formatPrice(item.price)}
           </p>
 
           {/* QUANTITY SECTION */}

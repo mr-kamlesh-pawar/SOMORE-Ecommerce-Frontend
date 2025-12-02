@@ -8,6 +8,7 @@ export const newLaunchProducts = [
     compareAtPrice: 699,
     badge: "Sale",
     isHome: true,
+    category: "combo",
     shortDescription: "Saptamveda Moringa Jeera Powder is a traditional wellness blend that supports digestion, metabolism & detox.",
 
 
@@ -116,6 +117,7 @@ export const newLaunchProducts = [
     isHome: true,
     compareAtPrice: 699,
     badge: "",
+    category: "combo",
     shortDescription: "Saptamveda Moringa Jeera Powder is a traditional wellness blend that supports digestion, metabolism & detox.",
 
 
@@ -261,6 +263,7 @@ export const newLaunchProducts = [
     isHome: true,
     compareAtPrice: 699,
     badge: "Sale",
+    category: "mens-health",
     shortDescription: "Complete plant protein for energy, immunity & wellness.",
     images: [
       "/images/products/moringa-1.png",
@@ -281,6 +284,7 @@ export const newLaunchProducts = [
     price: 189,
     isHome: true,
     compareAtPrice: 499,
+    category: "collections",
     badge: "",
     shortDescription: "Improves hemoglobin, stamina & skin glow naturally.",
     images: [
@@ -302,6 +306,7 @@ export const newLaunchProducts = [
     price: 159,
     compareAtPrice: 399,
     badge: "",
+    category: "combo",
     isHome: false,
     shortDescription: "Powerful immunity booster used in Ayurveda.",
     images: [
@@ -324,6 +329,7 @@ export const newLaunchProducts = [
     compareAtPrice: 399,
     badge: "Sale",
     isHome: false,
+    category: "womens-health",
     shortDescription: "Boosts immunity & promotes healthy hair & skin.",
     images: [
       "/images/products/moringa-1.png",

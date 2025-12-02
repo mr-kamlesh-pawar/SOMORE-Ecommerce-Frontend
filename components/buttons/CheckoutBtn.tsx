@@ -7,7 +7,7 @@ const CheckoutBtn = () => {
   return (
     <Link
       href={"/checkout"}
-      className="w-full flex items-center justify-center gap-3 my-2 text-xl bg-blue-500 dark:bg-blue-600 text-white py-3 px-8 rounded-full hover:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none"
+      className="w-full flex items-center justify-center gap-3 my-2 text-xl bg-[#063E09] dark:bg-[#063E09] text-white py-3 px-8 rounded-full hover:bg-[#07700c] dark:hover:bg-[#07700c] focus:outline-none"
     >
       {" "}
       <ArrowRight /> Checkout Now
