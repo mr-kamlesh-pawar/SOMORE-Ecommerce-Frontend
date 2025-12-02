@@ -16,7 +16,7 @@ const TestimonialsSection = ({ textCenter }: { textCenter: boolean }) => {
       <div className="max-w-screen-xl mx-auto px-4 md:px-8">
 
         <h2 className="text-center text-2xl md:text-4xl font-bold text-black tracking-wide mb-6 md:mb-10">
-          Here's What Our Customers Have To Say About Us
+         Here&apos;s What Our Customers Have To Say About Us
         </h2>
           
 

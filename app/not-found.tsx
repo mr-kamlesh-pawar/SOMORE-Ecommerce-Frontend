@@ -37,7 +37,7 @@ export default function NotFoundPage() {
         className="mt-4 text-gray-600 max-w-xl"
       >
         Saptamveda is a brand dedicated to organically cultivated herbal supplements.  
-        Looks like the page you're searching for has wandered off into nature 🌿
+        Looks like the page you&apos;re searching for has wandered off into nature 🌿
       </motion.p>
 
       {/* Illustration */}
