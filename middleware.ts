@@ -1,24 +1,24 @@
 import { NextResponse } from "next/server";
-import { account } from "./lib/appwrite";
+import type { NextRequest } from "next/server";
 
-export async function middleware(req: any) {
-  const pathname = req.nextUrl.pathname;
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
 
-  const authPages = ["/login", "/register"];
+  const isAuthPage =
+    pathname.startsWith("/login") || pathname.startsWith("/register");
 
-  try {
-    await account.get();
+  // 🔥 Check ANY Appwrite session cookie
+  const hasSession = request.cookies
+  .getAll()
+  .some((cookie) => cookie.name.startsWith("a_session_"));
 
-    // Logged in → block login & register pages
-    if (authPages.includes(pathname)) {
-      return NextResponse.redirect(new URL("/", req.url));
-    }
-  } catch {
-    // Not logged in → allow login/register but block private pages
-    if (!authPages.includes(pathname) && pathname.startsWith("/dashboard")) {
-      return NextResponse.redirect(new URL("/login", req.url));
-    }
+
+  if (hasSession && isAuthPage) {
+    return NextResponse.redirect(new URL("/", request.url));
   }
-
   return NextResponse.next();
 }
+
+export const config = {
+  matcher: ["/login", "/register"],
+};

@@ -89,7 +89,7 @@ export default function HeroBannerOne() {
           {bannerData.map((_, i) => {
             const active = i === current;
             return (
-              <>
+              
               <button
                 key={i}
                 onClick={() => api?.scrollTo(i)}
@@ -102,7 +102,7 @@ export default function HeroBannerOne() {
                   >
                 <span className="dot"></span>
               </button>
-                </>
+                
             );
           })}
         </div>

@@ -15,43 +15,30 @@ export default function LoginPage() {
 
   const router = useRouter();
 
-  // If user already logged in → redirect
-  useEffect(() => {
-    account.get().then(() => {
-      router.push("/");
-    }).catch(() => {});
-  }, []);
+ useEffect(() => {
+  account
+    .get()
+    .then(() => {
+      router.replace("/");
+    })
+    .catch(() => {});
+}, []);
+
 
   const handleLogin = async (e: any) => {
     e.preventDefault();
+    if (loading) return;
     setLoading(true);
 
     const email = e.target.email.value.trim();
     const password = e.target.password.value.trim();
-    console.log(email);
-    console.log(password)
 
     try {
-     
       await account.createEmailPasswordSession(email, password);
-
-      const user = await account.get();
-
-      if (!user.emailVerification) {
-        toast.error("Please verify your email before logging in ⚠️");
-        await account.deleteSession("current");
-        setLoading(false);
-        return;
-      }
-
-      const jwtToken = await account.createJWT();
-      localStorage.setItem("appwrite_jwt", jwtToken.jwt);
-
       toast.success("Login successful 🎉");
       router.push("/");
-
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.message || "Login failed");
     }
 
     setLoading(false);
@@ -64,6 +51,7 @@ export default function LoginPage() {
       `${window.location.origin}/login`
     );
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-10">
@@ -79,6 +67,7 @@ export default function LoginPage() {
               <input
                 name="email"
                 type="email"
+                placeholder="Enter email"
                 required
                 className="w-full border rounded-lg pl-10 pr-4 py-3"
               />
@@ -91,6 +80,7 @@ export default function LoginPage() {
               <Lock className="absolute left-3 top-3 text-gray-400" />
               <input
                 name="password"
+                placeholder="Enter Password"
                 type={showPassword ? "text" : "password"}
                 required
                 className="w-full border rounded-lg pl-10 pr-12 py-3"
@@ -113,19 +103,27 @@ export default function LoginPage() {
           >
             {loading ? "Logging in..." : "Login"}
           </button>
+
         </form>
 
         <button
           onClick={handleGoogleLogin}
           className="w-full flex items-center justify-center gap-3 py-3 border rounded-lg mt-6"
         >
-          <Image src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width={22} height={22} alt="Google" />
+          <Image
+            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+            width={22}
+            height={22}
+            alt="Google"
+          />
           Continue with Google
         </button>
 
         <p className="text-center text-sm mt-6">
           Don’t have an account?{" "}
-          <Link href="/register" className="underline text-black">Create one</Link>
+          <Link href="/register" className="underline text-black">
+            Create one
+          </Link>
         </p>
 
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
 import { account } from "@/lib/appwrite";
@@ -13,6 +13,16 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
+
+  useEffect(() => {
+  account
+    .get()
+    .then(() => {
+      router.replace("/");
+    })
+    .catch(() => {});
+}, []);
+
 
   const handleRegister = async (e: any) => {
     e.preventDefault();
@@ -49,8 +59,10 @@ export default function RegisterPage() {
     }
 
     try {
-      // Create Appwrite user
-      await account.create(ID.unique(), email, password, name);
+// 1️⃣ Create user
+await account.create(ID.unique(), email, password, name);
+
+
 
       alert("🎉 Account created successfully! Please login now.");
       router.push("/login");
