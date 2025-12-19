@@ -8,21 +8,31 @@ import toast from "react-hot-toast";
 import { account } from "@/lib/appwrite";
 import { OAuthProvider } from "appwrite";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/store/context/AuthContext";
 
 export default function LoginPage() {
+  const { refreshUser } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
 
- useEffect(() => {
+useEffect(() => {
+  console.log("🔍 Auth check started...");
+
   account
     .get()
-    .then(() => {
+    .then((user) => {
+      console.log("✅ User already logged in:", user);
+      console.log("➡️ Redirecting to /");
       router.replace("/");
     })
-    .catch(() => {});
+    .catch((err) => {
+      console.log("❌ User NOT logged in");
+      console.log("Error:", err?.message || err);
+    });
 }, []);
+
 
 
   const handleLogin = async (e: any) => {
@@ -35,6 +45,7 @@ export default function LoginPage() {
 
     try {
       await account.createEmailPasswordSession(email, password);
+      await refreshUser(); // 🔥 sync auth context
       toast.success("Login successful 🎉");
       router.push("/");
     } catch (err: any) {

@@ -1,26 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { User, MapPin, ShoppingBag, LogOut, Edit, Save, Trash } from "lucide-react";
+import {
+  User,
+  MapPin,
+  ShoppingBag,
+  LogOut,
+  Edit,
+  Save,
+  Trash,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { logout } from "@/lib/logout";
+import { useAuth } from "@/store/context/AuthContext";
 
 export default function AccountPage() {
-  // Dummy User Data
-  const dummyUser = {
-    name: "John Doe",
-    email: "johndoe@gmail.com",
-    phone: "9876543210",
-    image: "/images/about/reviewuser.png",
-  };
+  const router = useRouter();
+
+  // ✅ AUTH CONTEXT (single source of truth)
+  const { user, isLoggedIn, loading } = useAuth();
+
+  /* ---------------- ALL HOOKS AT TOP ---------------- */
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentTab, setCurrentTab] = useState("profile");
   const [editMode, setEditMode] = useState(false);
 
   const [form, setForm] = useState({
-    name: dummyUser.name,
-    email: dummyUser.email,
-    phone: dummyUser.phone,
+    name: "",
+    email: "",
+    phone: "",
   });
 
   const [addresses, setAddresses] = useState([
@@ -44,6 +54,36 @@ export default function AccountPage() {
     phone: "",
   });
 
+  /* ---------------- AUTH GUARD ---------------- */
+
+  useEffect(() => {
+    if (!loading && !isLoggedIn) {
+      router.replace("/login");
+    }
+
+    if (user) {
+      setForm({
+        name: user.name || "",
+        email: user.email || "",
+        phone: user.phone || "",
+      });
+    }
+  }, [loading, isLoggedIn, user]);
+
+  /* ---------------- LOADING STATE ---------------- */
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        Checking authentication...
+      </div>
+    );
+  }
+
+  if (!isLoggedIn) return null;
+
+  /* ---------------- HANDLERS ---------------- */
+
   const handleChange = (e: any) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -51,6 +91,11 @@ export default function AccountPage() {
   const saveChanges = () => {
     console.log("Saved:", form);
     setEditMode(false);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    router.replace("/login");
   };
 
   const addAddress = () => {
@@ -68,7 +113,6 @@ export default function AccountPage() {
   const deleteAddress = (id: number) => {
     setAddresses(addresses.filter((a) => a.id !== id));
   };
-
   return (
     <div className="min-h-screen bg-gray-100 flex">
 
@@ -81,14 +125,14 @@ export default function AccountPage() {
         {/* Profile Banner */}
         <div className="flex flex-col items-center mb-10">
           <Image
-            src={dummyUser.image}
+             src="/images/about/reviewuser.png" // fallback avatar
             alt="user"
             width={80}
             height={80}
             className="rounded-full mb-3 shadow-md"
           />
-          <p className="font-semibold">{dummyUser.name}</p>
-          <p className="text-sm text-gray-600">{dummyUser.email}</p>
+          <p className="font-semibold">{user.name}</p>
+          <p className="text-sm text-gray-600">{user.email}</p>
         </div>
 
         {/* Nav Items */}
@@ -121,7 +165,7 @@ export default function AccountPage() {
           </button>
 
           <button
-            onClick={() => alert("Logout frontend only")}
+            onClick={handleLogout}
             className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-red-50 text-red-600"
           >
             <LogOut size={18} /> Logout

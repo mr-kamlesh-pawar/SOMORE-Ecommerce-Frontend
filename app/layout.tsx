@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/providers/ThemeProvider";
 import ModalProvider from "@/providers/ModalProvider";
 import { CartProvider } from "@/store/context/CartContext";
 import { Toaster } from "react-hot-toast";
+import { AuthProvider } from "@/store/context/AuthContext";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -37,12 +38,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-
+              <AuthProvider>
              <CartProvider> 
               {children}
                <Toaster position="top-center" reverseOrder={false} />
               
               </CartProvider>
+
+              </AuthProvider>
        
           <ModalProvider />
         </ThemeProvider>
