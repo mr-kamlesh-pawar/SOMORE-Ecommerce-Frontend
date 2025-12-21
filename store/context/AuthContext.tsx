@@ -6,7 +6,14 @@ import {
   useEffect,
   useState,
 } from "react";
-import { account } from "@/lib/appwrite";
+import { account, databases } from "@/lib/appwrite";
+
+/* ---------------- CONFIG ---------------- */
+
+const DB_ID = process.env.NEXT_PUBLIC_APPWRITE_DB_ID!;
+const USERS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!;
+
+/* ---------------- TYPES ---------------- */
 
 type AuthContextType = {
   user: any | null;
@@ -15,6 +22,8 @@ type AuthContextType = {
   refreshUser: () => Promise<void>;
 };
 
+/* ---------------- CONTEXT ---------------- */
+
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
@@ -22,15 +31,38 @@ const AuthContext = createContext<AuthContextType>({
   refreshUser: async () => {},
 });
 
+/* ================================================= */
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔐 Fetch logged-in user ONCE
+  /* ---------------- FETCH USER ---------------- */
+
   const fetchUser = async () => {
+    setLoading(true);
+
     try {
-      const res = await account.get();
-      setUser(res);
+      // 1️⃣ Get auth user
+      const authUser = await account.get();
+
+      // 2️⃣ Try fetching profile
+      let profile = null;
+      try {
+        profile = await databases.getDocument(
+          DB_ID,
+          USERS_COLLECTION_ID,
+          authUser.$id
+        );
+      } catch {
+        profile = null; // profile may not exist yet
+      }
+
+      // 3️⃣ Attach profile safely
+      setUser({
+        ...authUser,
+        profile, // ✅ ALWAYS present (object or null)
+      });
     } catch {
       setUser(null);
     } finally {
@@ -38,9 +70,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  /* ---------------- INIT ---------------- */
+
   useEffect(() => {
     fetchUser();
   }, []);
+
+  /* ---------------- PROVIDER ---------------- */
 
   return (
     <AuthContext.Provider
@@ -48,7 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         loading,
         isLoggedIn: !!user,
-        refreshUser: fetchUser, // 🔥 call after login/logout
+        refreshUser: fetchUser,
       }}
     >
       {children}
@@ -56,6 +92,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ✅ Custom hook
+/* ---------------- HOOK ---------------- */
+
 export const useAuth = () => useContext(AuthContext);
-    

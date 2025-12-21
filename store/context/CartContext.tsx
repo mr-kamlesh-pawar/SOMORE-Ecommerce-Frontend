@@ -88,6 +88,8 @@ function loadInitialCart(): CartState {
   }
 }
 
+
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, undefined, loadInitialCart);
 
@@ -105,6 +107,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const getTotalAmount = () =>
     getTotalPrice() + getTax() + getShippingFee();
 
+  const getCartCount = () =>
+    state.cartItems.reduce((total, item) => total + item.quantity, 0);
+
+
   return (
     <CartContext.Provider
       value={{
@@ -114,6 +120,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         getTax,
         getShippingFee,
         getTotalAmount,
+        getCartCount
       }}
     >
       {children}

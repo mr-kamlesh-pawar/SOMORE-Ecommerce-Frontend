@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
 
 const Logo = () => {
   return (
@@ -10,13 +9,14 @@ const Logo = () => {
         alt="brand"
         width={300}
         height={200}
+        priority
+        style={{ height: "auto" }}  
         className="
-          w-[120px]     /* mobile */
-          sm:w-[180px] /* small devices */
-          md:w-[190px] /* tablet */
-          lg:w-[170px] /* desktop */
-          xl:w-[190px] /* large screens */
-          h-auto
+          w-[120px]
+          sm:w-[180px]
+          md:w-[190px]
+          lg:w-[170px]
+          xl:w-[190px]
         "
       />
     </Link>

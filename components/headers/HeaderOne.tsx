@@ -8,10 +8,13 @@ import { cn } from "@/lib/utils";
 import Logo from "../logo/Logo";
 import AnnouncementBar from "./AnnouncementBar";
 import { useRouter } from "next/navigation";
+import { useCart } from "@/store/hooks/useCart";
 
 
 const HeaderOne = () => {
   const pathname = usePathname();
+   const { getCartCount } = useCart();
+     const cartCount = getCartCount();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -107,10 +110,15 @@ const HeaderOne = () => {
             className="relative p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-800"
           >
             <ShoppingCart size={22} />
-            <span className="absolute -top-1 -right-1 bg-black text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-              1
-            </span>
-          </Link>
+
+           {cartCount > 0 && (
+        <span className="absolute -top-1 -right-1 bg-black text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+          {cartCount}
+        </span>
+      )}
+    </Link>
+
+
         </div>
 
       </div>

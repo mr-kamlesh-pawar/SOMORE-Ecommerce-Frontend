@@ -1,199 +1,160 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
-import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
-import { account } from "@/lib/appwrite";
-import { ID, OAuthProvider } from "appwrite";
+import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { account, databases } from "@/lib/appwrite";
+import { ID } from "appwrite";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/store/context/AuthContext";
+
 
 export default function RegisterPage() {
+  const { loading: authLoading, isLoggedIn } = useAuth();
+  const router = useRouter();
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const router = useRouter();
+  // 🔐 Auth decision AFTER hydration (safe)
+  if (authLoading) return null; // or spinner
 
-  useEffect(() => {
-  account
-    .get()
-    .then(() => {
-      router.replace("/");
-    })
-    .catch(() => {});
-}, []);
+  if (isLoggedIn) {
+    router.replace("/");
+    return null;
+  }
 
-
-  const handleRegister = async (e: any) => {
+  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (loading) return;
+
     setLoading(true);
 
-    const name = e.target.name.value.trim();
-    const email = e.target.email.value.trim();
-    const password = e.target.password.value.trim();
-    const confirm = e.target.confirm.value.trim();
+    const form = e.currentTarget;
+    const firstName = (form.elements.namedItem("firstName") as HTMLInputElement).value.trim();
+    const lastName = (form.elements.namedItem("lastName") as HTMLInputElement).value.trim();
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value.trim();
+    const phone = (form.elements.namedItem("phone") as HTMLInputElement).value.trim();
+    const password = (form.elements.namedItem("password") as HTMLInputElement).value;
+    const confirm = (form.elements.namedItem("confirm") as HTMLInputElement).value;
 
-    // VALIDATIONS
-    if (!name) {
-      alert("❌ Name is required!");
-      setLoading(false);
-      return;
-    }
-
-    if (!email.includes("@")) {
-      alert("❌ Enter a valid email!");
-      setLoading(false);
-      return;
-    }
-
-    if (password.length < 6) {
-      alert("❌ Password must be at least 6 characters!");
+    if (!firstName || !lastName) {
+      alert("❌ First and last name required");
       setLoading(false);
       return;
     }
 
     if (password !== confirm) {
-      alert("❌ Passwords do not match!");
+      alert("❌ Passwords do not match");
       setLoading(false);
       return;
     }
 
     try {
-// 1️⃣ Create user
-await account.create(ID.unique(), email, password, name);
+      const user = await account.create(
+        ID.unique(),
+        email,
+        password,
+        `${firstName} ${lastName}`
+      );
 
+      await databases.createDocument(
+        process.env.NEXT_PUBLIC_APPWRITE_DB_ID!,
+        process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!,
+        user.$id,
+        {
+          firstName,
+          lastName,
+          email,
+          phone,
+          role: "user",
+        }
+      );
 
-
-      alert("🎉 Account created successfully! Please login now.");
+      alert("🎉 Account created!");
       router.push("/login");
-
     } catch (err: any) {
-      console.error(err);
-      alert("❌ Registration Failed: " + err.message);
+      alert(err?.message || "Registration failed");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
-  };
-
-  const handleGoogleSignup = () => {
-    account.createOAuth2Session(
-      OAuthProvider.Google,
-      `${window.location.origin}/`,
-      `${window.location.origin}/register`
-    );
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-10">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8 sm:p-10">
-        
+      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
+
         <h2 className="text-3xl font-semibold text-center">Create an Account</h2>
 
-        {/* FORM */}
         <form onSubmit={handleRegister} className="space-y-6 mt-6">
 
-          {/* NAME */}
-          <div>
-            <label className="text-sm font-medium">Full Name</label>
-            <div className="relative mt-1">
-              <User className="absolute left-3 top-3 text-gray-400" size={20} />
-              <input
-                name="name"
-                required
-                placeholder="John Doe"
-                className="w-full border rounded-lg pl-10 pr-4 py-3"
-              />
-            </div>
+          {/* FIRST + LAST NAME */}
+          <div className="grid grid-cols-2 gap-4">
+            <input name="firstName" required placeholder="First Name" className="border rounded-lg px-4 py-3" />
+            <input name="lastName" required placeholder="Last Name" className="border rounded-lg px-4 py-3" />
           </div>
 
           {/* EMAIL */}
-          <div>
-            <label className="text-sm font-medium">Email</label>
-            <div className="relative mt-1">
-              <Mail className="absolute left-3 top-3 text-gray-400" size={20} />
-              <input
-                name="email"
-                type="email"
-                required
-                placeholder="example@gmail.com"
-                className="w-full border rounded-lg pl-10 pr-4 py-3"
-              />
-            </div>
+          <div className="relative">
+            <Mail className="absolute left-3 top-3 text-gray-400" size={20} />
+            <input
+              name="email"
+              type="email"
+              required
+              placeholder="Email"
+              className="w-full border rounded-lg pl-10 pr-4 py-3"
+            />
           </div>
 
+          {/* PHONE */}
+          <input
+            name="phone"
+            type="tel"
+            required
+            placeholder="Mobile Number"
+            className="w-full border rounded-lg px-4 py-3"
+          />
+
           {/* PASSWORD */}
-          <div>
-            <label className="text-sm font-medium">Password</label>
-            <div className="relative mt-1">
-              <Lock className="absolute left-3 top-3 text-gray-400" size={20} />
-              <input
-                name="password"
-                type={showPassword ? "text" : "password"}
-                required
-                placeholder="Create password"
-                className="w-full border rounded-lg pl-10 pr-12 py-3"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3"
-              >
-                {showPassword ? <EyeOff /> : <Eye />}
-              </button>
-            </div>
+          <div className="relative">
+            <Lock className="absolute left-3 top-3 text-gray-400" size={20} />
+            <input
+              name="password"
+              type={showPassword ? "text" : "password"}
+              required
+              placeholder="Password"
+              className="w-full border rounded-lg pl-10 pr-12 py-3"
+            />
+            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3">
+              {showPassword ? <EyeOff /> : <Eye />}
+            </button>
           </div>
 
           {/* CONFIRM PASSWORD */}
-          <div>
-            <label className="text-sm font-medium">Confirm Password</label>
-            <div className="relative mt-1">
-              <Lock className="absolute left-3 top-3 text-gray-400" size={20} />
-              <input
-                name="confirm"
-                type={showConfirm ? "text" : "password"}
-                required
-                placeholder="Confirm password"
-                className="w-full border rounded-lg pl-10 pr-12 py-3"
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirm(!showConfirm)}
-                className="absolute right-3 top-3"
-              >
-                {showConfirm ? <EyeOff /> : <Eye />}
-              </button>
-            </div>
+          <div className="relative">
+            <Lock className="absolute left-3 top-3 text-gray-400" size={20} />
+            <input
+              name="confirm"
+              type={showConfirm ? "text" : "password"}
+              required
+              placeholder="Confirm Password"
+              className="w-full border rounded-lg pl-10 pr-12 py-3"
+            />
+            <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-3">
+              {showConfirm ? <EyeOff /> : <Eye />}
+            </button>
           </div>
 
-          {/* SUBMIT */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-green-800 text-white py-3 rounded-lg text-lg"
+            className={`w-full py-3 rounded-lg text-white transition ${
+              loading ? "bg-gray-400 cursor-not-allowed" : "bg-green-800"
+            }`}
           >
             {loading ? "Creating Account..." : "Register"}
           </button>
         </form>
-
-        {/* GOOGLE LOGIN */}
-        <div className="flex items-center my-6">
-          <div className="flex-grow h-px bg-gray-300"></div>
-          <span className="mx-3 text-gray-500 text-sm">OR</span>
-          <div className="flex-grow h-px bg-gray-300"></div>
-        </div>
-
-        <button
-          onClick={handleGoogleSignup}
-          className="w-full flex items-center justify-center gap-3 py-3 border rounded-lg"
-        >
-          <Image 
-            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-            width={22}
-            height={22}
-            alt="Google"
-          />
-          <span>Sign Up with Google</span>
-        </button>
 
       </div>
     </div>
