@@ -1,7 +1,7 @@
 // app/verify/page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { account, databases } from "@/lib/appwrite";
 import { CheckCircle, XCircle, LogIn, MailCheck } from "lucide-react";
@@ -16,6 +16,38 @@ export default function VerifyPage() {
   const [userEmail, setUserEmail] = useState("");
   const [userId, setUserId] = useState("");
   const [autoLoginAttempted, setAutoLoginAttempted] = useState(false);
+
+  // ✅ Move handleAutoLogin outside and use useCallback
+  const handleAutoLogin = useCallback(async (targetUserId?: string) => {
+    if (autoLoginAttempted) return;
+    
+    const loginUserId = targetUserId || userId;
+    if (!loginUserId) {
+      toast.error("User ID not found");
+      return;
+    }
+    
+    setAutoLoginAttempted(true);
+    setStatus("logging-in");
+
+    try {
+      console.log("🔄 Auto-login process started...");
+      toast.success("Login page Redirecting...");
+      
+      setTimeout(() => {
+        router.push("/");
+      }, 100);
+
+    } catch (err: any) {
+      console.error("❌ login failed:", err);
+      if (err.code === 401 || err.message?.includes("Invalid credentials")) {
+        toast.error("❌ Wrong password. Please login");
+      } else {
+        toast.error(" Please login.");
+      }
+      setStatus("success");
+    }
+  }, [autoLoginAttempted, userId, router]);
 
   useEffect(() => {
     const verifyEmail = async () => {
@@ -32,38 +64,6 @@ export default function VerifyPage() {
 
       setUserId(urlUserId);
       setStatus("verifying");
-
-      // ✅ Define handleAutoLogin INSIDE useEffect
-      const handleAutoLogin = async (targetUserId?: string) => {
-        if (autoLoginAttempted) return;
-        
-        const loginUserId = targetUserId || urlUserId;
-        if (!loginUserId) {
-          toast.error("User ID not found");
-          return;
-        }
-        
-        setAutoLoginAttempted(true);
-        setStatus("logging-in");
-
-        try {
-          console.log("🔄 Auto-login process started...");
-          toast.success("Login page Redirecting...");
-          
-          setTimeout(() => {
-            router.push("/");
-          }, 100);
-
-        } catch (err: any) {
-          console.error("❌ login failed:", err);
-          if (err.code === 401 || err.message?.includes("Invalid credentials")) {
-            toast.error("❌ Wrong password. Please login");
-          } else {
-            toast.error(" Please login.");
-          }
-          setStatus("success");
-        }
-      };
 
       try {
         console.log("🔄 Step 1: Verifying email with Appwrite...");
@@ -215,9 +215,9 @@ export default function VerifyPage() {
     };
 
     verifyEmail();
-  }, [searchParams, router]); // ✅ No missing dependencies now
+  }, [searchParams, handleAutoLogin]); // ✅ Add handleAutoLogin to dependencies
 
-  // ✅ Manual Login (keep outside)
+  // ✅ Manual Login
   const handleManualLogin = () => {
     if (userEmail) {
       router.push(`/login?email=${encodeURIComponent(userEmail)}&verified=true`);
@@ -226,7 +226,7 @@ export default function VerifyPage() {
     }
   };
 
-  // ✅ Resend Verification (keep outside)
+  // ✅ Resend Verification
   const handleResendVerification = async () => {
     if (!userId || !userEmail) {
       toast.error("User information not available");
@@ -255,6 +255,7 @@ export default function VerifyPage() {
       toast.error(err.message || "Failed to resend verification");
     }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-gray-50 p-4">
