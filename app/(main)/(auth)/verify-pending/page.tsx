@@ -85,7 +85,7 @@ export default function VerifyPendingPage() {
           </h1>
           
           <p className="text-gray-600">
-            We've sent a verification link to
+            We&apos;ve sent a verification link to
             <br />
             <span className="font-medium text-gray-900">{email || "your email address"}</span>
           </p>
@@ -147,7 +147,7 @@ export default function VerifyPendingPage() {
               </p>
               
               <p className="text-sm text-gray-500">
-                Didn't receive the email? Make sure you entered the correct email address.
+                Didn&apos;t receive the email? Make sure you entered the correct email address.
               </p>
             </div>
           </div>

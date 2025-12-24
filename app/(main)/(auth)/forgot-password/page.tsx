@@ -101,7 +101,7 @@ export default function ForgotPasswordPage() {
           <div className="text-center space-y-6">
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <p className="text-green-800">
-                We've sent password reset instructions to:
+                We&apos;ve sent password reset instructions to:
                 <br />
                 <strong>{email}</strong>
               </p>
@@ -127,7 +127,7 @@ export default function ForgotPasswordPage() {
             </div>
             
             <p className="text-sm text-gray-500">
-              Didn't receive the email? Check your spam folder or{" "}
+             Didn&apos;t receive the email?
               <button
                 onClick={() => setSent(false)}
                 className="text-blue-600 hover:underline"

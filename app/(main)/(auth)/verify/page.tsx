@@ -33,41 +33,68 @@ export default function VerifyPage() {
       setUserId(urlUserId);
       setStatus("verifying");
 
+      // ✅ Define handleAutoLogin INSIDE useEffect
+      const handleAutoLogin = async (targetUserId?: string) => {
+        if (autoLoginAttempted) return;
+        
+        const loginUserId = targetUserId || urlUserId;
+        if (!loginUserId) {
+          toast.error("User ID not found");
+          return;
+        }
+        
+        setAutoLoginAttempted(true);
+        setStatus("logging-in");
+
+        try {
+          console.log("🔄 Auto-login process started...");
+          toast.success("Login page Redirecting...");
+          
+          setTimeout(() => {
+            router.push("/");
+          }, 100);
+
+        } catch (err: any) {
+          console.error("❌ login failed:", err);
+          if (err.code === 401 || err.message?.includes("Invalid credentials")) {
+            toast.error("❌ Wrong password. Please login");
+          } else {
+            toast.error(" Please login.");
+          }
+          setStatus("success");
+        }
+      };
+
       try {
         console.log("🔄 Step 1: Verifying email with Appwrite...");
         
-        // ✅ IMPORTANT: Use the existing account instance (not temporary client)
-        // Direct verification call
         await account.updateVerification(urlUserId, secret);
         console.log("✅ Step 1: Appwrite verification SUCCESS");
 
         // ✅ Step 2: Update database
         console.log("🔄 Step 2: Updating database...");
         try {
-          // Tere database me fields: lastName, emailVerified, accountStatus, etc.
           await databases.updateDocument(
             process.env.NEXT_PUBLIC_APPWRITE_DB_ID!,
             process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!,
             urlUserId,
             {
-              emailVerified: true, // ✅ Ye field tere database me hai
-              accountStatus: "verified", // ✅ Ye field tere database me hai
-              $updatedAt: new Date().toISOString(), // Auto update hoga
+              emailVerified: true,
+              accountStatus: "verified",
+              $updatedAt: new Date().toISOString(),
             }
           );
           console.log("✅ Step 2: Database updated successfully");
         } catch (dbError: any) {
           console.error("⚠️ Database update error:", dbError);
           
-          // Specific database errors
           if (dbError.message.includes("Unknown attribute")) {
-            // Try with only emailVerified field
             await databases.updateDocument(
               process.env.NEXT_PUBLIC_APPWRITE_DB_ID!,
               process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!,
               urlUserId,
               {
-                emailVerified: true // ✅ Only this field if others cause error
+                emailVerified: true
               }
             );
             console.log("✅ Database updated with only emailVerified field");
@@ -110,12 +137,10 @@ export default function VerifyPage() {
           type: err.type
         });
 
-        // ✅ Handle different error cases
         if (err.code === 409 || err.message?.includes("already verified")) {
           console.log("ℹ️ Email already verified in Appwrite");
           
           try {
-            // Check database status
             const userDoc = await databases.getDocument(
               process.env.NEXT_PUBLIC_APPWRITE_DB_ID!,
               process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!,
@@ -125,7 +150,6 @@ export default function VerifyPage() {
             if (userDoc) {
               setUserEmail(userDoc.email);
               
-              // Update database if not already updated
               if (!userDoc.emailVerified) {
                 await databases.updateDocument(
                   process.env.NEXT_PUBLIC_APPWRITE_DB_ID!,
@@ -164,13 +188,11 @@ export default function VerifyPage() {
             );
             
             if (userDoc && userDoc.emailVerified) {
-              // Database me verified hai
               setUserEmail(userDoc.email);
               setStatus("success");
               setMessage("✅ Email verification completed!");
               toast.success("Verification completed!");
               
-              // Auto login attempt
               setTimeout(() => {
                 handleAutoLogin(urlUserId);
               }, 1500);
@@ -193,57 +215,18 @@ export default function VerifyPage() {
     };
 
     verifyEmail();
-  }, [searchParams]);
+  }, [searchParams, router]); // ✅ No missing dependencies now
 
-  // ✅ Auto Login Function (Improved)
-  const handleAutoLogin = async (targetUserId?: string) => {
-    if (autoLoginAttempted) return;
-    
-    const loginUserId = targetUserId || userId;
-    if (!loginUserId) {
-      toast.error("User ID not found");
-      return;
-    }
-    
-    setAutoLoginAttempted(true);
-    setStatus("logging-in");
-
-    try {
-      console.log("🔄 Auto-login process started...");
-      
-
-      // 6️⃣ Success - redirect
-      toast.success("Login page Redirecting...");
-      
-      setTimeout(() => {
-        router.push("/");
-      }, 100);
-
-    } catch (err: any) {
-      console.error("❌ login failed:", err);
-      
-      if (err.code === 401 || err.message?.includes("Invalid credentials")) {
-        toast.error("❌ Wrong password. Please login");
-      } else {
-        toast.error(" Please login.");
-      }
-      
-      // Go back to success state (verification was successful)
-      setStatus("success");
-    }
-  };
-
-  // ✅ Manual Login
+  // ✅ Manual Login (keep outside)
   const handleManualLogin = () => {
     if (userEmail) {
-      // Pre-fill email on login page
       router.push(`/login?email=${encodeURIComponent(userEmail)}&verified=true`);
     } else {
       router.push("/login");
     }
   };
 
-  // ✅ Resend Verification
+  // ✅ Resend Verification (keep outside)
   const handleResendVerification = async () => {
     if (!userId || !userEmail) {
       toast.error("User information not available");
@@ -252,8 +235,6 @@ export default function VerifyPage() {
 
     try {
       toast.loading("Requesting new verification link...");
-      
-      // We need user's password to create session and resend
       const password = prompt(`Enter password for ${userEmail} to resend verification:`);
       
       if (!password) {
@@ -262,13 +243,8 @@ export default function VerifyPage() {
         return;
       }
 
-      // Create session
       await account.createEmailPasswordSession(userEmail, password);
-      
-      // Resend verification
       await account.createVerification(`${window.location.origin}/verify`);
-      
-      // Cleanup
       await account.deleteSession('current');
       
       toast.dismiss();

@@ -10,7 +10,7 @@ export default function OfflinePage() {
       <WifiOff size={72} className="text-red-600 mb-6" />
 
       <h1 className="text-3xl font-bold mb-2">
-        You're Offline
+        You&apos;re Offline
       </h1>
 
       <p className="text-gray-600 text-center max-w-md">
