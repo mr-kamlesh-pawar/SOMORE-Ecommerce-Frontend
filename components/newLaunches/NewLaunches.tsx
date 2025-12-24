@@ -50,7 +50,7 @@ export default function NewLaunches({
 
   // ✅ Only show products with isHome = true
   const homeProducts = mappedProducts.filter((p) => p.isHome);
-
+  console.log("HEllo from new launches")
   return (
     <section className="w-full bg-white py-6 md:py-10">
       <div className="max-w-[1600px] mx-auto px-3 md:px-6">

@@ -25,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
           "min-h-screen bg-background font-sans antialiased hide-scrollbar",
@@ -49,6 +49,20 @@ export default function RootLayout({
        
           <ModalProvider />
         </ThemeProvider>
+
+<script
+  dangerouslySetInnerHTML={{
+    __html: `
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js');
+        });
+      }
+    `,
+  }}
+/>
+
+
       </body>
     </html>
   );

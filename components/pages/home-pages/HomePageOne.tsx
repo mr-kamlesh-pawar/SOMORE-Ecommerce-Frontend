@@ -1,68 +1,102 @@
-import React, { Suspense } from "react";
+import { Suspense } from "react";
 import HeroBannerOne from "@/components/hero/HeroBannerOne";
-import ProductsCollectionOne from "@/components/products/ProductsCollectionOne";
-import NewsLetterTwo from "@/components/newsLetter/NewsLetterTwo";
-import LatestBlogPosts from "@/components/blog/LatestBlogPosts";
-import CategoriesCollection from "@/components/category/CategoriesCollection";
 import TestimonialsSection from "@/components/others/Testimonials";
-import BannerOne from "@/components/banners/BannerOne";
-import BenefitsSection from "@/components/others/BenefitSection";
 import Loader from "@/components/others/Loader";
-import AnnouncementBar from "@/components/headers/AnnouncementBar";
-import { newLaunchProducts } from "@/data/NewLaunches/newLaunchProducts";
 import NewLaunches from "@/components/newLaunches/NewLaunches";
 import FeaturedCollection from "@/components/FeaturedCollection/FeaturedCollection";
-import { herbalProducts } from "@/data/herbalProducts/herbalProducts";
-import ShopifyVideoSection from "@/components/FeaturedCollection/ShopifyVideoSection";
 import ShopifyCollection from "../ShopifyCollection/ShopifyCollection";
-import { organicPowders } from "@/data/collections/organicPowders";
 import RichTextSection from "../RichTextSection/RichTextSection";
 import { richTextContent } from "@/data/richTextData";
+import { fetchHomeSectionProducts } from "@/lib/product-service";
 
 
 
-const HomePageOne = () => {
+export const dynamic = "force-dynamic";
+
+
+export default async function HomePageOne() {
+ const newLaunches = await fetchHomeSectionProducts("new-launches", 4);
+  const herbalProducts = await fetchHomeSectionProducts("herbal", 8);
+  const organicPowders = await fetchHomeSectionProducts("organic-powders", 4);
+
+  console.log("🚀 HOME COUNTS");
+  console.log(newLaunches.length);
+  console.log(herbalProducts.length);
+  console.log(organicPowders.length);
+
   return (
     <section className="overflow-hidden">
-       
+
       <HeroBannerOne />
+
+      {/* ================= NEW LAUNCHES ================= */}
       <Suspense fallback={<Loader />}>
-          <NewLaunches
-        products={newLaunchProducts}
-        viewAllLink="/collections/moringa-products"
-      />
+        <NewLaunches
+          products={newLaunches.map((p:any) => ({
+            id: p.$id,
+            slug: p.slug,
+            title: p.title,
+            price: p.price,
+            compareAtPrice: p.compareAtPrice,
+            badge: p.badge,
+            images: p.images,
+            isHome: true,
+          }))}
+          viewAllLink="/collections/moringa-products"
+        />
       </Suspense>
+
+      {/* ================= HERBAL PRODUCTS ================= */}
       <FeaturedCollection
-  title="Best Online Store for Herbal Products and Supplements"
-  products={herbalProducts}
-  viewAllUrl="/collections/herbal"
- />
+        title="Best Online Store for Herbal Products and Supplements"
+        products={herbalProducts.map((p:any) => ({
+          id: p.$id,
+          title: p.title,
+          url: `/products/${p.slug}`,
+          image1: p.images?.[0],
+          image2: p.images?.[1],
+          badge: p.badge,
+          rating: p.ratingAvg,
+          ratingCount: p.ratingCount,
+          price: `₹${p.price}`,
+          compareAtPrice: p.compareAtPrice
+            ? `₹${p.compareAtPrice}`
+            : undefined,
+        }))}
+        viewAllUrl="/collections/herbal"
+      />
 
-      
-      {/* <ProductsCollectionOne /> */}
+      {/* ================= ORGANIC POWDERS ================= */}
       <ShopifyCollection
-      title="Organic Powders"
-      products={organicPowders}
-      viewAllUrl="/collections/organic-powders"
-    />
-      {/* <BenefitsSection textCenter={false} />
-      <BannerOne /> */}
+        title="Organic Powders"
+        products={organicPowders.map((p:any) => ({
+          id: p.$id,
+          title: p.title,
+          url: `/products/${p.slug}`,
+          image1: p.images?.[0],
+          badge: p.badge,
+          rating: p.ratingAvg,
+          ratingCount: p.ratingCount,
+          price: `₹${p.price}`,
+          compareAtPrice: p.compareAtPrice
+            ? `₹${p.compareAtPrice}`
+            : undefined,
+        }))}
+        viewAllUrl="/collections/organic-powders"
+      />
 
+      {/* ================= TESTIMONIALS ================= */}
       <TestimonialsSection textCenter={false} />
 
-        <RichTextSection
-      title={richTextContent.title}
-      shortText={richTextContent.shortText}
-      longText={richTextContent.longText}
-      buttonText={richTextContent.buttonText}
-      buttonUrl={richTextContent.buttonUrl}
-    />
+      {/* ================= RICH TEXT ================= */}
+      <RichTextSection
+        title={richTextContent.title}
+        shortText={richTextContent.shortText}
+        longText={richTextContent.longText}
+        buttonText={richTextContent.buttonText}
+        buttonUrl={richTextContent.buttonUrl}
+      />
 
-       
-      {/* <LatestBlogPosts twoColunmHeader={true} />
-      <NewsLetterTwo /> */}
     </section>
   );
-};
-
-export default HomePageOne;
+}

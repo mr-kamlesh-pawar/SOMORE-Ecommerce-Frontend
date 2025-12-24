@@ -36,7 +36,7 @@ export default function ShopifyCollection({ title, products, viewAllUrl }: Props
         <div
           className="
             grid gap-x-6 gap-y-10
-            grid-cols-1
+            grid-cols-2
             sm:grid-cols-2
             md:grid-cols-3
             xl:grid-cols-4

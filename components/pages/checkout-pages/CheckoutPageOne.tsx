@@ -1,11 +1,27 @@
+"use client"
 import OrderSummaryForCheckout from "@/components/carts/OrderSummaryForCheckout";
 import CheckoutForm from "@/components/forms/CheckoutForm";
 import CouponCodeForm from "@/components/forms/CouponCodeForm";
 import { Separator } from "@/components/ui/separator";
-import React from "react";
+import React, { useEffect } from "react";
 import CheckoutAddress from "./CheckoutAddress";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/store/context/AuthContext";
 
 const CheckoutPageOne = () => {
+
+   const { user, loading } = useAuth();
+  const router = useRouter();
+
+  // 🔐 Protect checkout
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace("/login?redirect=/checkout");
+    }
+  }, [user, loading, router]);
+
+  if (loading || !user) return null;
+
   return (
     <section className="px-4 py-4 lg:px-16  bg-white dark:bg-gray-800">
       <div className="max-w-screen-xl mx-auto">

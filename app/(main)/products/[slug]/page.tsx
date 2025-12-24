@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { newLaunchProducts } from "@/data/NewLaunches/newLaunchProducts";
+import { fetchActiveOffer, fetchProductBySlug } from "@/lib/product-service";
 import { useCart } from "@/store/hooks/useCart";
 import FeaturedCollection from "@/components/FeaturedCollection/FeaturedCollection";
 import { herbalProducts } from "@/data/herbalProducts/herbalProducts";
@@ -14,32 +14,140 @@ import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
 export default function ProductDetailsPage() {
+  const MAX_QTY_PER_PRODUCT = 7;
+
   const { slug } = useParams();
-  const product = newLaunchProducts.find((p) => p.slug === slug);
+  const router = useRouter();
+  const { dispatch } = useCart();
+
+  const [product, setProduct] = useState<any>(null);
+  const [offer, setOffer] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [qty, setQty] = useState(1);
   const [showSticky, setShowSticky] = useState(false);
 
-  const router = useRouter();
-
-
-  const { dispatch } = useCart();
-
+  /* ================= LOAD DATA ================= */
   useEffect(() => {
-    const handleScroll = () => {
-      setShowSticky(window.scrollY > 200);
+    if (!slug) return;
+
+    const load = async () => {
+      const [productData, offerData] = await Promise.all([
+        fetchProductBySlug(slug as string),
+        fetchActiveOffer(),
+      ]);
+
+      if (!productData) {
+        setLoading(false);
+        return;
+      }
+
+      setProduct({
+        ...productData,
+        rating: {
+          reviews: productData.ratingCount ?? 0,
+          stars: productData.ratingAvg ?? 0,
+        },
+        images:
+          productData.images?.length > 0
+            ? productData.images
+            : ["/images/placeholder.png"],
+      });
+
+      setOffer(offerData);
+      setLoading(false);
     };
+
+    load();
+  }, [slug]);
+
+  const decreaseQty = () => {
+  if (qty > 1) {
+    setQty(qty - 1);
+  }
+};
+
+
+ const increaseQty = () => {
+  // 🚫 max 7 limit
+  if (qty >= MAX_QTY_PER_PRODUCT) {
+    toast.error("Maximum 7 items allowed per order");
+    return;
+  }
+
+  // 🚫 stock limit
+  if (qty >= product.stock) {
+    toast.error("Only limited stock available");
+    return;
+  }
+
+  setQty(qty + 1);
+};
+
+
+
+
+  /* ================= STICKY BAR ================= */
+  useEffect(() => {
+    const handleScroll = () => setShowSticky(window.scrollY > 200);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+
+ const handleAddToCart = (redirectToCart = false) => {
+  // ❌ out of stock
+  if (product.stock <= 0) {
+    toast.error("This product is out of stock");
+    return;
+  }
+
+  // ❌ max 7 limit
+  if (qty >= MAX_QTY_PER_PRODUCT) {
+    toast.error("Maximum 7 items allowed per order");
+    return;
+  }
+
+  // ❌ stock limit
+  if (qty > product.stock) {
+    toast.error(`Only ${product.stock} items available in stock`);
+    return;
+  }
+
+  dispatch({
+    type: "ADD_TO_CART",
+    payload: {
+      id: product.$id,
+      name: product.title,
+      price: product.price,
+      images: product.images,
+      quantity: qty,
+      slug: product.slug,
+      stock: product.stock, // ✅ important
+    },
+  });
+
+  toast.success(
+    redirectToCart
+      ? "Redirecting to checkout..."
+      : "Product added to cart!"
+  );
+
+  if (redirectToCart) {
+    setTimeout(() => {
+      router.push("/cart");
+    }, 300);
+  }
+};
+
+
+  if (loading) {
+    return <div className="text-center py-20">Loading product...</div>;
+  }
+
   if (!product) {
-    return (
-      <div className="text-center py-20 text-xl font-semibold">
-        Product not found
-      </div>
-    );
+    return <div className="text-center py-20">Product not found</div>;
   }
 
   return (
@@ -61,7 +169,7 @@ export default function ProductDetailsPage() {
 
             {/* Thumbnails */}
             <div className="flex gap-3 mt-4 overflow-x-auto">
-              {product.images.map((img, i) => (
+              {product.images.map((img:string, i:number) => (
                 <div
                   key={i}
                   onClick={() => setSelectedImage(i)}
@@ -78,6 +186,8 @@ export default function ProductDetailsPage() {
                 </div>
               ))}
             </div>
+
+
           </div>
 
           {/* ---------------- RIGHT: Product Info ---------------- */}
@@ -114,63 +224,45 @@ export default function ProductDetailsPage() {
             <div className="mt-6">
               <p className="font-medium mb-2">Quantity</p>
 
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => qty > 1 && setQty(qty - 1)}
-                  className="w-10 h-10 bg-gray-200 text-lg rounded flex justify-center items-center"
-                >
-                  –
-                </button>
+             <div className="flex items-center gap-3">
+  <button
+    onClick={decreaseQty}
+    disabled={qty <= 1}
+    className="w-10 h-10 bg-gray-200 text-lg rounded flex justify-center items-center disabled:opacity-50"
+  >
+    –
+  </button>
 
-                <span className="text-lg font-semibold">{qty}</span>
+  <span className="text-lg font-semibold">{qty}</span>
 
-                <button
-                  onClick={() => setQty(qty + 1)}
-                  className="w-10 h-10 bg-gray-200 text-lg rounded flex justify-center items-center"
-                >
-                  +
-                </button>
-              </div>
+  <button
+    onClick={increaseQty}
+    disabled={qty > MAX_QTY_PER_PRODUCT || qty > product.stock}
+    className="w-10 h-10 bg-gray-200 text-lg rounded flex justify-center items-center disabled:opacity-50"
+  >
+    +
+  </button>
+</div>
+
             </div>
 
-            {/* Offer Box */}
-            <div className="mt-6 bg-orange-50 border border-orange-200 p-5 rounded-lg space-y-4">
-              {product.offers?.map((offer, i) => (
-                <div key={i}>
-                  <p className="text-red-700 font-bold">{offer.title}</p>
-                  <p className="text-gray-800 text-sm">
-                    {offer.subtitle}
-                    {offer.coupon && (
-                      <span className="font-bold"> Use Coupon : {offer.coupon}</span>
-                    )}
-                  </p>
-                </div>
-              ))}
-            </div>
+             {/* OFFER BOX (COMMON OFFER) */}
+      {offer && (
+        <div className="mt-6 bg-orange-50 border border-orange-200 p-5 rounded-lg">
+          <p className="text-red-700 font-bold">{offer.name}</p>
+          <div 
+            className="text-gray-800 text-sm prose -mb-9"
+            dangerouslySetInnerHTML={{ __html: offer.description }}
+          />
+        </div>
+      )}
 
             {/* Buttons */}
             <div className="mt-8 flex gap-4">
              <button
   className="w-full border border-black text-black py-4 rounded text-lg font-medium hover:bg-gray-100"
-  onClick={() => {
-    dispatch({
-      type: "ADD_TO_CART",
-      payload: {
-        id: product.id,
-        name: product.title,
-        price: product.price,
-        images: product.images,
-        quantity: qty,
-         slug: product.slug,
-      },
-    });
-
-    toast.success("Product added to cart!");
-
-    setTimeout(() => {
-      router.push("/cart");
-    }, 300); // Small delay for toast visibility
-  }}
+   onClick={() => handleAddToCart(true)}
+  disabled={product.stock <= 0}
 >
   Add to cart
 </button>
@@ -178,25 +270,8 @@ export default function ProductDetailsPage() {
 
              <button
   className="w-full bg-black text-white py-4 rounded text-lg font-semibold hover:bg-gray-900 flex justify-center items-center gap-2"
-  onClick={() => {
-    dispatch({
-      type: "ADD_TO_CART",
-      payload: {
-        id: product.id,
-        name: product.title,
-        price: product.price,
-        images: product.images,
-        quantity: qty,
-         slug: product.slug,
-      },
-    });
-
-    toast.success("Redirecting to checkout...");
-
-    setTimeout(() => {
-      router.push("/cart");
-    }, 300);
-  }}
+   onClick={() => handleAddToCart(true)}
+  disabled={product.stock <= 0}
 >
   BUY NOW
   <Image src="/images/products/upi.png" width={70} height={20} alt="upi" />
@@ -280,27 +355,8 @@ export default function ProductDetailsPage() {
         font-semibold 
         flex-shrink-0
       "
-       onClick={() => {
-    dispatch({
-      type: "ADD_TO_CART",
-      payload: {
-        id: product.id,
-        name: product.title,
-        price: product.price,
-        images: product.images,
-        quantity: qty,
-         slug: product.slug,
-      },
-
-      
-    });
-
-     toast.success("Product added to cart!");
-
-    setTimeout(() => {
-      router.push("/cart");
-    }, 300); // Small delay for toast visibility
-  }}
+       onClick={() => handleAddToCart(true)}
+  disabled={product.stock <= 0}
     >
       Add to cart
     </button>

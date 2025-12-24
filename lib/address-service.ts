@@ -14,6 +14,7 @@ export type AddressPayload = {
   landmark?: string;
   city: string;
   state: string;
+  mobileno: string,
   pincode: string;
   addressType: string;
   isDefault: boolean;

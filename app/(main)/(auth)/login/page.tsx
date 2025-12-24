@@ -55,13 +55,7 @@ useEffect(() => {
     setLoading(false);
   };
 
-  const handleGoogleLogin = () => {
-    account.createOAuth2Session(
-      OAuthProvider.Google,
-      `${window.location.origin}/`,
-      `${window.location.origin}/login`
-    );
-  };
+ 
 
 
   return (
@@ -117,18 +111,6 @@ useEffect(() => {
 
         </form>
 
-        <button
-          onClick={handleGoogleLogin}
-          className="w-full flex items-center justify-center gap-3 py-3 border rounded-lg mt-6"
-        >
-          <Image
-            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-            width={22}
-            height={22}
-            alt="Google"
-          />
-          Continue with Google
-        </button>
 
         <p className="text-center text-sm mt-6">
           Don’t have an account?{" "}

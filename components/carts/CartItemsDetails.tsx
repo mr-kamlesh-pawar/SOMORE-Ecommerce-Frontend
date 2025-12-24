@@ -7,15 +7,23 @@ import Link from "next/link";
 import { formatPrice } from "@/lib/formatPrice";
 import { useCart } from "@/store/hooks/useCart";
 import { CartItem } from "@/store/context/CartContext";
+import toast from "react-hot-toast";
 
 const CartItemsDetails = () => {
   const [isMounted, setIsMounted] = useState(false);
 
   const { cartItems, dispatch } = useCart();
 
+  console.log("Cart Data: ---------------", cartItems)
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+
+  const MAX_PER_ORDER = 8;
+
+
 
   if (!isMounted) return null;
 
@@ -27,15 +35,30 @@ const CartItemsDetails = () => {
     );
   }
 
-  const updateQuantity = (id: number, qty: number) => {
-    if (qty < 1) return; // safety check
-    dispatch({
-      type: "UPDATE_QTY",
-      payload: { id, quantity: qty },
-    });
-  };
+  
 
-  const removeFromCart = (id: number) => {
+  const updateQuantity = (item: CartItem, newQty: number) => {
+  if (newQty < 1) return;
+
+  console.log(item.stock)
+
+  if (newQty > item.stock) {
+    toast.error(`Only ${item.stock} items left in stock`);
+    return;
+  }
+
+  if (newQty >= MAX_PER_ORDER) {
+    toast.error("Maximum 7 quantity allowed per product");
+    return;
+  }
+
+  dispatch({
+    type: "UPDATE_QTY",
+    payload: { id: item.id, quantity: newQty },
+  });
+};
+
+  const removeFromCart = (id: string) => {
     dispatch({ type: "REMOVE_FROM_CART", payload: id });
   };
 
@@ -60,8 +83,8 @@ const CartItemsDetails = () => {
               className="w-20 h-20 rounded-lg object-cover"
             />
 
-            <Link
-              href={`/shop/${item.slug}`}
+            <Link prefetch 
+              href={`/products/${item.slug}`}
               className="text-lg font-semibold text-gray-900 dark:text-white hover:opacity-60"
             >
              <p> {(item.name ?? "").slice(0, 38)}</p>
@@ -77,24 +100,31 @@ const CartItemsDetails = () => {
 
           {/* QUANTITY SECTION */}
           <div className="flex items-center gap-2">
+           
             <Button
-              disabled={item.quantity <= 1}
-              onClick={() => updateQuantity(item.id, item.quantity - 1)}
-              size="sm"
-              variant="outline"
-            >
-              <Minus />
-            </Button>
+          disabled={item.quantity <= 1}
+          onClick={() => updateQuantity(item, item.quantity - 1)}
+          size="sm"
+          variant="outline"
+        >
+          <Minus />
+        </Button>
 
-            <p className="font-medium">{item.quantity}</p>
+          <p className="font-medium">{item.quantity}</p>
 
             <Button
-              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+              disabled={
+               
+                item.quantity >= MAX_PER_ORDER
+              }
+              onClick={() => updateQuantity(item, item.quantity + 1)}
               size="sm"
               variant="outline"
             >
               <Plus />
             </Button>
+
+
           </div>
 
           {/* REMOVE BUTTON */}

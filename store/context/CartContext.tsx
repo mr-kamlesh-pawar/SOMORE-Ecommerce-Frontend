@@ -3,12 +3,13 @@
 import { createContext, useContext, useEffect, useReducer } from "react";
 
 export interface CartItem {
-  id: number;
+  id: string;
   name: string;
   price: number;
   images: string[];
   quantity: number;
   slug: string;
+  stock: number;
 }
 
 
@@ -19,8 +20,8 @@ interface CartState {
 
 type Action =
   | { type: "ADD_TO_CART"; payload: CartItem }
-  | { type: "REMOVE_FROM_CART"; payload: number }
-  | { type: "UPDATE_QTY"; payload: { id: number; quantity: number } }
+  | { type: "REMOVE_FROM_CART"; payload: string }
+  | { type: "UPDATE_QTY"; payload: { id: string; quantity: number } }
   | { type: "CLEAR_CART" }
   | { type: "APPLY_COUPON"; payload: string }
   | { type: "REMOVE_COUPON" };
