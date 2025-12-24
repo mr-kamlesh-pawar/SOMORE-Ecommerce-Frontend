@@ -6,6 +6,7 @@ import { account, databases } from "@/lib/appwrite";
 import { ID } from "appwrite";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/store/context/AuthContext";
+import toast from "react-hot-toast";
 
 
 export default function RegisterPage() {
@@ -58,6 +59,39 @@ export default function RegisterPage() {
         `${firstName} ${lastName}`
       );
 
+      console.log("✅ Account created:", user.$id);
+      console.log("📧 Email verification status:", user.emailVerification);
+
+      // 2️⃣ IMPORTANT: Current guest session delete karo
+      console.log("🔄 Deleting guest session...");
+      try {
+        await account.deleteSession('current');
+        console.log("✅ Guest session deleted");
+      } catch (sessionErr) {
+        console.log("⚠️ No session to delete, continuing...");
+      }
+
+      // 3️⃣ Email-password session create karo (proper user session)
+      console.log("🔄 Creating user session...");
+      const session = await account.createEmailPasswordSession(email, password);
+      console.log("✅ User session created:", session.$id);
+
+      // 4️⃣ Now send verification email with proper user session
+      console.log("🔄 Sending verification email...");
+      const verificationUrl = `${window.location.origin}/verify`;
+      console.log("📤 Verification URL:", verificationUrl);
+      
+      await account.createVerification(verificationUrl);
+      console.log("✅ Verification email sent!");
+
+      // 5️⃣ Session delete karo (optional, for security)
+      console.log("🔄 Deleting user session...");
+      await account.deleteSession(session.$id);
+      console.log("✅ Session cleaned up");
+
+      // 6️⃣ Database me user details save karo
+      console.log("🔄 Saving user to database...");
+
       await databases.createDocument(
         process.env.NEXT_PUBLIC_APPWRITE_DB_ID!,
         process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!,
@@ -68,13 +102,33 @@ export default function RegisterPage() {
           email,
           phone,
           role: "user",
+           emailVerified: false,
+            accountStatus: "pending_verification",
         }
       );
 
-      alert("🎉 Account created!");
-      router.push("/login");
+
+ // 7️⃣ Success message
+      toast.success("🎉 Account created! Please check your email for verification link.");
+      
+      // 8️⃣ Redirect to verify-pending page
+      setTimeout(() => {
+        router.push(`/verify-pending?email=${encodeURIComponent(email)}`);
+      }, 1000);
+
     } catch (err: any) {
-      alert(err?.message || "Registration failed");
+      console.error("❌ Registration error:", err);
+      
+      // Specific error messages
+      if (err.message.includes("guests missing scopes")) {
+        toast.error("Authentication error. Please try again.");
+      } else if (err.code === 409) {
+        toast.error("User with this email already exists");
+      } else if (err.code === 400) {
+        toast.error("Invalid email or password format");
+      } else {
+        toast.error(err.message || "Registration failed");
+      }
     } finally {
       setLoading(false);
     }

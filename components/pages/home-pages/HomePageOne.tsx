@@ -35,11 +35,11 @@ export default async function HomePageOne() {
           products={newLaunches.map((p:any) => ({
             id: p.$id,
             slug: p.slug,
-            title: p.title,
+            title: p.name,
             price: p.price,
-            compareAtPrice: p.compareAtPrice,
+            compareAtPrice: p.marketprice,
             badge: p.badge,
-            images: p.images,
+            images: p.images || [],
             isHome: true,
           }))}
           viewAllLink="/collections/moringa-products"
@@ -51,16 +51,16 @@ export default async function HomePageOne() {
         title="Best Online Store for Herbal Products and Supplements"
         products={herbalProducts.map((p:any) => ({
           id: p.$id,
-          title: p.title,
+          title: p.name,
           url: `/products/${p.slug}`,
           image1: p.images?.[0],
           image2: p.images?.[1],
           badge: p.badge,
-          rating: p.ratingAvg,
-          ratingCount: p.ratingCount,
+          rating: p.averagerating,
+          ratingCount: p.reviewcount,
           price: `₹${p.price}`,
-          compareAtPrice: p.compareAtPrice
-            ? `₹${p.compareAtPrice}`
+          compareAtPrice: p.marketprice
+            ? `₹${p.marketprice}`
             : undefined,
         }))}
         viewAllUrl="/collections/herbal"
@@ -71,15 +71,15 @@ export default async function HomePageOne() {
         title="Organic Powders"
         products={organicPowders.map((p:any) => ({
           id: p.$id,
-          title: p.title,
+          title: p.name,
           url: `/products/${p.slug}`,
           image1: p.images?.[0],
           badge: p.badge,
-          rating: p.ratingAvg,
-          ratingCount: p.ratingCount,
+          rating: p.averagerating,
+          ratingCount: p.reviewcount,
           price: `₹${p.price}`,
-          compareAtPrice: p.compareAtPrice
-            ? `₹${p.compareAtPrice}`
+          compareAtPrice: p.marketprice
+            ? `₹${p.marketprice}`
             : undefined,
         }))}
         viewAllUrl="/collections/organic-powders"
