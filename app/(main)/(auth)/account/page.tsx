@@ -163,14 +163,14 @@ export default function AccountPage() {
         firstName: user.profile?.firstName || "",
         lastName: user.profile?.lastName || "",
         email: user.email || "",
-        phone: user.profile?.phone || "",
+        phone: user.profile?.phone  || "",
       });
       
       if (!newAddress.mobileno && user.profile?.phone) {
         setNewAddress(prev => ({ ...prev, mobileno: user.profile.phone }));
       }
     }
-  }, [loading, isLoggedIn, user, router, mounted]);
+  }, [loading, isLoggedIn, user, router, mounted,  newAddress.mobileno]);
 
   /* ---------------- LOAD ADDRESSES ---------------- */
   useEffect(() => {

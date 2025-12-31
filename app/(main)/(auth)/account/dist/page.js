@@ -177,7 +177,7 @@ function AccountPage() {
                 setNewAddress(function (prev) { return (__assign(__assign({}, prev), { mobileno: user.profile.phone })); });
             }
         }
-    }, [loading, isLoggedIn, user, router, mounted]);
+    }, [loading, isLoggedIn, user, router, mounted, newAddress.mobileno]);
     /* ---------------- LOAD ADDRESSES ---------------- */
     react_1.useEffect(function () {
         if (!user || !mounted)
