@@ -1,38 +1,70 @@
+// lib/product-service.ts
+// ✅ NO CACHE - Always fresh data
+
 export async function fetchHomeSectionProducts(
   section: "new-launches" | "herbal" | "organic-powders",
   limit: number
 ) {
+  const timestamp = Date.now();
+  
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_SITE_URL}/api/products/home?section=${section}&limit=${limit}`,
+    `${process.env.NEXT_PUBLIC_SITE_URL}/api/products/home?section=${section}&limit=${limit}&_t=${timestamp}`,
     {
-      cache: "no-store", // 🔥 VERY IMPORTANT
+      // ✅ Force no cache
+      cache: "no-store",
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache'
+      }
     }
   );
 
   if (!res.ok) {
-    throw new Error("Failed to fetch products");
+    console.error(`Failed to fetch ${section}:`, res.status);
+    return [];
   }
 
-
   return res.json();
 }
 
-// PRODUCT
 export async function fetchProductBySlug(slug: string) {
-  const res = await fetch(`/api/products/${slug}`, {
-    cache: "no-store",
-  });
+  const timestamp = Date.now();
+  
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_SITE_URL}/api/products/${slug}?_t=${timestamp}`,
+    {
+      cache: "no-store",
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate'
+      }
+    }
+  );
 
-  if (!res.ok) return null;
+  if (!res.ok) {
+    console.error(`Failed to fetch product ${slug}:`, res.status);
+    return null;
+  }
+  
   return res.json();
 }
 
-// COMMON OFFER
 export async function fetchActiveOffer() {
-  const res = await fetch(`/api/offers/active`, {
-    cache: "no-store",
-  });
+  const timestamp = Date.now();
+  
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_SITE_URL}/api/offers/active?_t=${timestamp}`,
+    {
+      cache: "no-store",
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate'
+      }
+    }
+  );
 
-  if (!res.ok) return null;
+  if (!res.ok) {
+    console.error("Failed to fetch offer:", res.status);
+    return null;
+  }
+  
   return res.json();
 }

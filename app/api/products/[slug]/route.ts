@@ -1,12 +1,14 @@
+// app/api/products/[slug]/route.ts
 import { NextResponse } from "next/server";
 import { Query } from "appwrite";
-import { databases, storage } from "@/lib/appwrite"; // Import storage
+import { databases, storage } from "@/lib/appwrite";
 
-export const dynamic = "force-dynamic";
+// ✅ ISR for product pages
+export const revalidate = 30;
 
 const DB_ID = process.env.NEXT_PUBLIC_APPWRITE_DB_ID!;
 const COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_PRODUCTS_COLLECTION_ID!;
-const BUCKET_ID = process.env.NEXT_PUBLIC_APPWRITE_BUCKET_ID!; // Add bucket ID
+const BUCKET_ID = process.env.NEXT_PUBLIC_APPWRITE_BUCKET_ID!;
 
 export async function GET(
   req: Request,
@@ -40,9 +42,9 @@ export async function GET(
 
     return NextResponse.json(product, {
       headers: {
-        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-        "Pragma": "no-cache",
-        "Expires": "0",
+        // ✅ ISR caching
+        'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=59',
+        'CDN-Cache-Control': 'public, s-maxage=30'
       },
     });
 

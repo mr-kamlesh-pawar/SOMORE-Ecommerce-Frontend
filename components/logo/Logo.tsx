@@ -7,17 +7,20 @@ const Logo = () => {
       <Image
         src="/logo.png"
         alt="brand"
-        width={300}
-        height={200}
+        width={250} // Original width
+        height={180} // Original height
         priority
-        style={{ height: "auto" }}  
         className="
-          w-[120px]
-          sm:w-[180px]
-          md:w-[190px]
-          lg:w-[170px]
-          xl:w-[190px]
+          w-[90px] h-auto
+          sm:w-[120px] 
+          md:w-[170px]
+          lg:w-[120px]
+          xl:w-[120px]
         "
+        style={{ 
+          height: 'auto', // This maintains aspect ratio
+          maxWidth: '100%'
+        }}
       />
     </Link>
   );

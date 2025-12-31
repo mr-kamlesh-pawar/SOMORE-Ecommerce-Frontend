@@ -47,8 +47,8 @@ export default function HeroBannerOne() {
               <CarouselItem key={index}>
                 <Link href={slide.link ?? "#"} className="block w-full">
                  
-                  <div className="relative w-full 
-  h-[40vh] sm:h-[60vh] md:h-[75vh] 
+<div className="relative w-full 
+  h-[30vh] sm:h-[35vh] md:h-[45vh] 
   lg:h-[110vh]"
 >
 
