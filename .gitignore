@@ -16,6 +16,12 @@
 # production
 /build
 
+
+# production
+/dist
+**/dist
+*/dist
+
 # misc
 .DS_Store
 *.pem
