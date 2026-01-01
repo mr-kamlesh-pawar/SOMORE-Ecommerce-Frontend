@@ -168,29 +168,26 @@ const OrdersPage = () => {
     }
   ];
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      if (!user) return;
+ useEffect(() => {
+  const fetchOrders = async () => {
+    if (!user) return;
+    
+    try {
+      setLoading(true);
       
-      try {
-        setLoading(true);
-        // TODO: Replace with actual API call
-        // const response = await fetch(`/api/orders?userId=${user.$id}`);
-        // const data = await response.json();
-        
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        setOrders(mockOrders);
-      } catch (error) {
-        console.error('Error fetching orders:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      setOrders(mockOrders);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchOrders();
-  }, [user]);
+  fetchOrders();
+}, [user]); 
 
   // Filter orders
   const filteredOrders = orders.filter(order => {
