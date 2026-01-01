@@ -78,7 +78,7 @@ const OrderSuccessPage = () => {
         {/* Order Status Message */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
           <p className="text-blue-800 text-sm">
-            <strong>What's next?</strong> We&apos;ve sent you an email confirmation. 
+            <strong>What&apos;s next?</strong> We&apos;ve sent you an email confirmation. 
             Your order will be processed and shipped within 24-48 hours.
           </p>
         </div>

@@ -167,15 +167,9 @@ var OrdersPage = function () {
                     case 1:
                         _a.trys.push([1, 3, 4, 5]);
                         setLoading(true);
-                        // TODO: Replace with actual API call
-                        // const response = await fetch(`/api/orders?userId=${user.$id}`);
-                        // const data = await response.json();
                         // Simulate API delay
                         return [4 /*yield*/, new Promise(function (resolve) { return setTimeout(resolve, 800); })];
                     case 2:
-                        // TODO: Replace with actual API call
-                        // const response = await fetch(`/api/orders?userId=${user.$id}`);
-                        // const data = await response.json();
                         // Simulate API delay
                         _a.sent();
                         setOrders(mockOrders);
