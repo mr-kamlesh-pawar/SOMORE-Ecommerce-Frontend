@@ -22,7 +22,7 @@ const CheckoutBtn = ({ disabled = false }: { disabled?: boolean }) => {
   // ✅ Enabled state (Navigation allowed)
   return (
     <Link
-      href="/checkout"
+      href="/checkout/address"
       className="
         w-full flex items-center justify-center gap-3 my-2 text-xl
         bg-[#063E09] text-white py-3 px-8 rounded-full

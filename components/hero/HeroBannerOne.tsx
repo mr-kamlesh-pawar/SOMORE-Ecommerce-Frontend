@@ -1,35 +1,67 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import Image from "next/image";
 import Link from "next/link";
-import { bannerData } from "@/data/banner/bannerData";
+import { databases } from "@/lib/appwrite";
+import { Query } from "appwrite";
+import { getAppwriteImageUrl } from "@/lib/appwriteImage";
+import HeroBannerSkeleton from "@/components/skeleton/HeroBannerSkeleton";
+
+interface Banner {
+  $id: string;
+  name: string;
+  bannerimg: string; // image ID
+  $updatedAt: string;
+}
 
 export default function HeroBannerOne() {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
+  const [banners, setBanners] = useState<Banner[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Sync dots with slider
+  // Fetch banners from Appwrite
+  async function fetchBanners() {
+    try {
+      const res = await databases.listDocuments(
+        process.env.NEXT_PUBLIC_APPWRITE_DB_ID!,
+        process.env.NEXT_PUBLIC_APPWRITE_BANNERS_COLLECTION_ID!,
+        [Query.orderAsc("$createdAt")]
+      );
+
+      setBanners(res.documents as any);
+    } catch (err) {
+      console.error("Banner fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchBanners();
+  }, []);
+
+  // Sync dots
   useEffect(() => {
     if (!api) return;
-
     setCurrent(api.selectedScrollSnap());
-
     api.on("select", () => setCurrent(api.selectedScrollSnap()));
   }, [api]);
 
+  if (loading) return <HeroBannerSkeleton />;
+
+  if (!banners.length) return null;
+
   return (
     <section className="relative w-full bg-white">
-      {/* BANNER CONTAINER - Shopify Style (auto height) */}
       <div className="relative w-full overflow-hidden">
         <Carousel
           setApi={setApi}
@@ -40,112 +72,49 @@ export default function HeroBannerOne() {
               stopOnInteraction: false,
             }),
           ]}
-          className="w-full"
         >
           <CarouselContent>
-            {bannerData.map((slide, index) => (
-              <CarouselItem key={index}>
-                <Link href={slide.link ?? "#"} className="block w-full">
-                 
-<div className="relative w-full 
-  h-[30vh] sm:h-[35vh] md:h-[45vh] 
-  lg:h-[110vh]"
->
-
+            {banners.map((banner, index) => (
+              <CarouselItem key={banner.$id}>
+                <Link href="#" className="block w-full">
+                  <div
+                    className="
+                      relative w-full 
+                      h-[30vh] sm:h-[35vh] md:h-[45vh] 
+                      lg:h-[110vh]
+                    "
+                  >
                     <Image
-                      src={slide.images[0]}
+                      src={getAppwriteImageUrl(
+                        banner.bannerimg,
+                        banner.$updatedAt
+                      )}
+                      alt={banner.name}
                       fill
                       priority={index === 0}
-                      alt={slide.title}
-                     className="w-full h-full
-  object-contain
-  lg:object-cover
-"
-
+                      className="object-contain lg:object-cover"
+                      unoptimized
                     />
                   </div>
-
-                  
                 </Link>
               </CarouselItem>
             ))}
           </CarouselContent>
-
-       
-
-        
         </Carousel>
       </div>
 
-      {/* DOTS - BELOW THE BANNER (Shopify Exact Behaviour) */}
-      <div className="w-full flex justify-center py-2 lg:py-4 ">
-           <svg className="w-4 h-4 rotate-90 mx-2" viewBox="0 0 10 6">
-              <path
-                fill="currentColor"
-                d="M9.354.646a.5.5 0 0 0-.708 0L5 4.293 1.354.646a.5.5 0 0 0-.708.708l4 4a.5.5 0 0 0 .708 0l4-4a.5.5 0 0 0 0-.708"
-              />
-            </svg>
-        <div className="flex gap-3 slideshow__control-wrapper">
-          {bannerData.map((_, i) => {
-            const active = i === current;
-            return (
-              
-              <button
-                key={i}
-                onClick={() => api?.scrollTo(i)}
-                aria-label={`Go to slide ${i + 1}`}
-                aria-current={active ? "true" : undefined}
-                className={`
-                  slider-counter__link slider-counter__link--dots
-                  ${active ? "slider-counter__link--active" : ""}
-                  `}
-                  >
-                <span className="dot"></span>
-              </button>
-                
-            );
-          })}
-        </div>
-
-           <svg className="w-4 h-4 -rotate-90 mx-2" viewBox="0 0 10 6">
-              <path
-                fill="currentColor"
-                d="M9.354.646a.5.5 0 0 0-.708 0L5 4.293 1.354.646a.5.5 0 0 0-.708.708l4 4a.5.5 0 0 0 .708 0l4-4a.5.5 0 0 0 0-.708"
-              />
-            </svg>
-
-        <style jsx>{`
-          .slider-counter__link {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0;
-            border: none;
-            background: transparent;
-            cursor: pointer;
-          }
-
-          .dot {
-            width: 9px;
-            height: 9px;
-            border-radius: 9999px;
-            background: rgba(18, 18, 18, 0.25);
-            transition: transform 0.25s ease, background 0.25s ease;
-          }
-
-          .slider-counter__link--active .dot {
-            background: rgba(18, 18, 18, 0.95);
-            transform: scale(1.25);
-          }
-
-          :global(.dark) .dot {
-            background: rgba(255, 255, 255, 0.3);
-          }
-
-          :global(.dark) .slider-counter__link--active .dot {
-            background: rgba(255, 255, 255, 1);
-          }
-        `}</style>
+      {/* DOTS */}
+      <div className="w-full flex justify-center py-3 gap-3">
+        {banners.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => api?.scrollTo(i)}
+            className={`w-2 h-2 rounded-full transition ${
+              i === current ? "bg-black scale-125" : "bg-gray-400"
+            }`}
+            aria-label={`Go to slide ${i + 1}`}
+          />
+        ))}
       </div>
     </section>
   );

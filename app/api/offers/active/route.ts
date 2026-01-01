@@ -16,7 +16,7 @@ export async function GET() {
       DB_ID,
       OFFERS_COLLECTION_ID,
       [
-        Query.equal("isActive", true),
+        Query.equal("isactive", true),
         Query.orderDesc("$createdAt"),
         Query.limit(1),
       ]

@@ -79,9 +79,9 @@ var HeaderOne = function () {
             icon: react_1["default"].createElement(lucide_react_1.User, { size: 18 }),
             submenu: isLoggedIn ? [
                 { label: "Profile", link: "/account" },
-                { label: "Orders", link: "/account?tab=orders" },
-                { label: "Addresses", link: "/account?tab=addresses" },
-                { label: "Logout", link: "/logout" }
+                { label: "Orders", link: "/orders" },
+                { label: "Addresses", link: "/account" },
+                { label: "Logout", link: "/account" }
             ] : undefined
         },
         {

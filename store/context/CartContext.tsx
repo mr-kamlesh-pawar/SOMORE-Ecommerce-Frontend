@@ -138,6 +138,8 @@ function loadInitialCart(): CartState {
   }
 }
 
+ 
+
 
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
@@ -160,6 +162,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const getCartCount = () =>
     state.cartItems.reduce((total, item) => total + item.quantity, 0);
 
+   // Add clearCart function
+  const clearCart = () => {
+    dispatch({ type: "CLEAR_CART" });
+  };
+
 
   return (
     <CartContext.Provider
@@ -170,7 +177,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         getTax,
         getShippingFee,
         getTotalAmount,
-        getCartCount
+        getCartCount,
+        clearCart
       }}
     >
       {children}

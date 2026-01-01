@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { User, MapPin, ShoppingBag, LogOut, Trash, Menu, X, ChevronRight, Loader2 } from "lucide-react";
+import { User, MapPin, ShoppingBag, LogOut, Trash, Menu, X, ChevronRight, Loader2, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { logout } from "@/lib/logout";
 import { useAuth } from "@/store/context/AuthContext";
@@ -419,8 +419,8 @@ export default function AccountPage() {
           }`}
         >
           <div className="flex items-center gap-3">
-            <ShoppingBag size={18} />
-            <span>My Orders</span>
+            <Settings size={18} />
+            <span>Settings</span>
           </div>
           <ChevronRight size={16} />
         </button>
@@ -455,7 +455,7 @@ export default function AccountPage() {
               <Menu size={24} />
             </button>
             <h1 className="text-lg font-semibold">
-              {currentTab === "profile" ? "My Account" : "My Orders"}
+              {currentTab === "profile" ? "My Account" : "Setting"}
             </h1>
             <div className="w-10"></div> {/* Spacer for alignment */}
           </div>
@@ -805,16 +805,16 @@ export default function AccountPage() {
           {/* ORDERS TAB */}
           {currentTab === "orders" && (
             <div className="bg-white rounded-xl p-4 lg:p-6 shadow">
-              <h2 className="text-xl lg:text-2xl font-semibold mb-6">My Orders</h2>
+              <h2 className="text-xl lg:text-2xl font-semibold mb-6">Setting</h2>
               <div className="text-center py-12">
-                <ShoppingBag size={64} className="text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-600 text-lg mb-2">No orders yet</p>
-                <p className="text-gray-500 mb-6">Start shopping to see your orders here</p>
+                <Settings size={64} className="text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-600 text-lg mb-2">No developed yet</p>
+                <p className="text-gray-500 mb-6">Click on change password</p>
                 <button
                   onClick={() => router.push("/")}
                   className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors"
                 >
-                  Start Shopping
+                  Change Password
                 </button>
               </div>
             </div>
