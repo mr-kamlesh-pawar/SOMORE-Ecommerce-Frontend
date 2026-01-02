@@ -57,7 +57,7 @@ function HerbalSection() {
                                 appwrite_2.Query.equal("isActive", true),
                                 appwrite_2.Query.equal("homeSection", "herbal"),
                                 appwrite_2.Query.orderDesc("$createdAt"),
-                                appwrite_2.Query.limit(50),
+                                appwrite_2.Query.limit(8),
                             ])];
                     case 1:
                         res = _a.sent();

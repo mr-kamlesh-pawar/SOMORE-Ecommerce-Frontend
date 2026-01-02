@@ -17,7 +17,7 @@ const USERS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID
 
 export default function AccountPage() {
   const router = useRouter();
-  const { user, isLoggedIn, loading, refreshUser } = useAuth();
+  const { user, isLoggedIn, loading, refreshUser, logout } = useAuth();
 
   /* ---------------- STATE ---------------- */
   const [currentTab, setCurrentTab] = useState("profile");
@@ -253,13 +253,23 @@ export default function AccountPage() {
     }
   };
 
-  const handleLogout = async () => {
-    const toastId = toast.loading("Logging out...");
-    await logout();
-    toast.success("Logged out successfully", { id: toastId });
-    setTimeout(() => router.replace("/login"), 0);
-  };
 
+const handleLogout = async () => {
+  const toastId = toast.loading("Logging out...");
+  
+  try {
+    const result = await logout();
+    
+    if (result.success) {
+      toast.success("Logged out successfully", { id: toastId });
+      // No need for setTimeout, logout already redirects
+    } else {
+      toast.error(result.error || "Logout failed", { id: toastId });
+    }
+  } catch (error) {
+    toast.error("Logout failed", { id: toastId });
+  }
+};
   const addAddress = async () => {
     if (!newAddress.house.trim()) {
       toast.error("House / Flat is required");

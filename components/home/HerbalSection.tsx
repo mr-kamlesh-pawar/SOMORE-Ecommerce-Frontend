@@ -21,7 +21,7 @@ export default function HerbalSection() {
           Query.equal("isActive", true),
           Query.equal("homeSection", "herbal"),
           Query.orderDesc("$createdAt"),
-          Query.limit(50), // full herbal page
+          Query.limit(8), // full herbal page
         ]
       );
 
