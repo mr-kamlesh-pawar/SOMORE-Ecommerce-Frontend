@@ -245,7 +245,7 @@ var OrderSummaryForCheckout = function () {
                         "\uD83D\uDCDE ",
                         selectedAddress.mobileno),
                     react_1["default"].createElement("span", { className: "px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full" }, selectedAddress.addressType))),
-            react_1["default"].createElement("button", { onClick: function () { return router.push('/checkout'); }, className: "text-sm text-green-600 font-medium mt-3 hover:text-green-700 flex items-center gap-1" }, "Change Address"))),
+            react_1["default"].createElement("button", { onClick: function () { return router.push('/checkout/address'); }, className: "text-sm text-green-600 font-medium mt-3 hover:text-green-700 flex items-center gap-1" }, "Change Address"))),
         cartCount > 0 && (react_1["default"].createElement("div", { className: "mb-8" },
             react_1["default"].createElement("h3", { className: "font-semibold text-gray-900 dark:text-white mb-4" }, "Order Summary"),
             react_1["default"].createElement("div", { className: "space-y-3 mb-4" },

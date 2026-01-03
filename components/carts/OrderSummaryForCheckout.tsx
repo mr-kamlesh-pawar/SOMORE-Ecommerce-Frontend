@@ -289,7 +289,7 @@ const OrderSummaryForCheckout = () => {
             </div>
           </div>
           <button 
-            onClick={() => router.push('/checkout')}
+            onClick={() => router.push('/checkout/address')}
             className="text-sm text-green-600 font-medium mt-3 hover:text-green-700 flex items-center gap-1"
           >
             Change Address

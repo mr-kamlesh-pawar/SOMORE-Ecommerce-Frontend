@@ -36,7 +36,7 @@ export default function Footer() {
             <Image
               src={footerData.brand.logo}
               alt="Logo"
-              width={200}
+              width={170}
               height={60}
               className="mb-3"
             />

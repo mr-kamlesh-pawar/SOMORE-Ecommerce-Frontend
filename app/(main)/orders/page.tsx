@@ -4,6 +4,12 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/store/context/AuthContext';
 import { 
+  getOrderItems,
+  getUserOrders,
+  type Order,
+  type OrderItem
+} from '@/lib/order-service';
+import { 
   Package, 
   Calendar, 
   IndianRupee, 
@@ -13,10 +19,12 @@ import {
   RefreshCw, 
   AlertCircle,
   ChevronRight,
-  Filter,
   Search,
   Download,
-  Eye
+  Eye,
+  HelpCircle,
+  Phone,
+  Image as ImageIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -24,194 +32,99 @@ import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import OrderStatusBadge from '@/components/orders/OrderStatusBadge';
+import Image from 'next/image';
 
-// Types
-interface OrderItem {
-  id: string;
-  productId: string;
-  productName: string;
-  price: number;
-  quantity: number;
-  totalPrice: number;
-  image?: string;
-}
-
-interface Order {
-  $id: string;
-  orderNumber: string;
-  userId: string;
-  customerName: string;
-  customerEmail: string;
-  customerPhone: string;
-  shippingAddress: any;
-  address: string;
-  paymentMethod: string;
-  shippingCost: number;
-  taxAmount: number;
-  discountedAmount: number;
-  totalAmount: number;
-  orderStatus: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
-  notes: string;
-  createdAt: string;
-  items?: OrderItem[];
+// Extended Order type with items
+interface OrderWithItems extends Order {
+  items: OrderItem[];
 }
 
 const OrdersPage = () => {
   const { user } = useAuth();
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data - Replace with actual API call
-  const mockOrders: Order[] = [
-    {
-      $id: 'order_1',
-      orderNumber: 'ORD-20241215-001',
-      userId: 'user_1',
-      customerName: 'John Doe',
-      customerEmail: 'john@example.com',
-      customerPhone: '9876543210',
-      shippingAddress: {},
-      address: '101, MG Road, Mumbai - 400001',
-      paymentMethod: 'cod',
-      shippingCost: 5,
-      taxAmount: 10.5,
-      discountedAmount: 0,
-      totalAmount: 115.5,
-      orderStatus: 'delivered',
-      paymentStatus: 'paid',
-      notes: '',
-      createdAt: '2024-12-10T10:30:00Z',
-      items: [
-        {
-          id: 'item_1',
-          productId: 'prod_1',
-          productName: 'Organic Moringa Powder',
-          price: 50,
-          quantity: 2,
-          totalPrice: 100,
-          image: '/images/products/moringa.jpg'
-        }
-      ]
-    },
-    {
-      $id: 'order_2',
-      orderNumber: 'ORD-20241214-002',
-      userId: 'user_1',
-      customerName: 'John Doe',
-      customerEmail: 'john@example.com',
-      customerPhone: '9876543210',
-      shippingAddress: {},
-      address: '101, MG Road, Mumbai - 400001',
-      paymentMethod: 'online',
-      shippingCost: 5,
-      taxAmount: 8,
-      discountedAmount: 10,
-      totalAmount: 83,
-      orderStatus: 'shipped',
-      paymentStatus: 'paid',
-      notes: '',
-      createdAt: '2024-12-09T14:20:00Z',
-      items: [
-        {
-          id: 'item_2',
-          productId: 'prod_2',
-          productName: 'Ashwagandha Capsules',
-          price: 30,
-          quantity: 1,
-          totalPrice: 30,
-          image: '/images/products/ashwagandha.jpg'
-        },
-        {
-          id: 'item_3',
-          productId: 'prod_3',
-          productName: 'Turmeric Powder',
-          price: 20,
-          quantity: 2,
-          totalPrice: 40,
-          image: '/images/products/turmeric.jpg'
-        }
-      ]
-    },
-    {
-      $id: 'order_3',
-      orderNumber: 'ORD-20241213-003',
-      userId: 'user_1',
-      customerName: 'John Doe',
-      customerEmail: 'john@example.com',
-      customerPhone: '9876543210',
-      shippingAddress: {},
-      address: '101, MG Road, Mumbai - 400001',
-      paymentMethod: 'cod',
-      shippingCost: 5,
-      taxAmount: 5.5,
-      discountedAmount: 0,
-      totalAmount: 60.5,
-      orderStatus: 'processing',
-      paymentStatus: 'pending',
-      notes: '',
-      createdAt: '2024-12-08T09:15:00Z',
-      items: [
-        {
-          id: 'item_4',
-          productId: 'prod_4',
-          productName: 'Neem Capsules',
-          price: 25,
-          quantity: 2,
-          totalPrice: 50,
-          image: '/images/products/neem.jpg'
-        }
-      ]
-    }
-  ];
-
- useEffect(() => {
-  const fetchOrders = async () => {
-    if (!user) return;
-    
-    try {
-      setLoading(true);
+  useEffect(() => {
+    const fetchOrdersWithItems = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      setOrders(mockOrders);
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      try {
+        setLoading(true);
+        setError(null);
+        
+        console.log('Fetching orders for user:', user.$id);
+        
+        // Fetch orders
+        const fetchedOrders = await getUserOrders(user.$id);
+        console.log('Fetched orders:', fetchedOrders.length);
+        
+        // Fetch items for each order
+        const ordersWithItemsPromises = fetchedOrders.map(async (order) => {
+          try {
+            console.log(`Fetching items for order ${order.orderNumber} (${order.$id})`);
+            const items = await getOrderItems(order.$id);
+            console.log(`Found ${items.length} items for order ${order.orderNumber}`);
+            console.log("items: ", items);
+            
+            return {
+              ...order,
+              items
+            };
+          } catch (itemError) {
+            console.error(`Error fetching items for order ${order.$id}:`, itemError);
+            return {
+              ...order,
+              items: []
+            };
+          }
+        });
+        
+        const ordersWithItems = await Promise.all(ordersWithItemsPromises);
+        console.log('Total orders with items:', ordersWithItems.length);
+        setOrders(ordersWithItems);
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+        setError('Failed to load orders. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchOrders();
-}, [user]); 
+    fetchOrdersWithItems();
+  }, [user]);
 
   // Filter orders
   const filteredOrders = orders.filter(order => {
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      return (
+        order.orderNumber.toLowerCase().includes(query) ||
+        order.customerName.toLowerCase().includes(query) ||
+        order.address.toLowerCase().includes(query) ||
+        order.items.some(item => 
+          item.productName.toLowerCase().includes(query)
+        )
+      );
+    }
+    
+    // Apply status filter
     if (activeFilter === 'all') return true;
     if (activeFilter === 'recent') {
-      const orderDate = new Date(order.createdAt);
+      const orderDate = new Date(order.$createdAt);
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       return orderDate > thirtyDaysAgo;
     }
     return order.orderStatus === activeFilter;
   });
-
-  // Get status icon
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'delivered': return <CheckCircle className="text-green-600" size={20} />;
-      case 'shipped': return <Truck className="text-blue-600" size={20} />;
-      case 'processing': return <RefreshCw className="text-yellow-600" size={20} />;
-      case 'pending': return <Clock className="text-orange-600" size={20} />;
-      case 'cancelled': return <AlertCircle className="text-red-600" size={20} />;
-      default: return <Package className="text-gray-600" size={20} />;
-    }
-  };
 
   // Format date
   const formatDate = (dateString: string) => {
@@ -222,11 +135,36 @@ const OrdersPage = () => {
     }
   };
 
+  // Format time
+  const formatTime = (dateString: string) => {
+    try {
+      return format(new Date(dateString), 'hh:mm a');
+    } catch {
+      return '';
+    }
+  };
+
+  // Calculate subtotal
+  const calculateSubtotal = (order: OrderWithItems) => {
+    const itemsTotal = order.items.reduce((sum, item) => sum + item.totalPrice, 0);
+    return itemsTotal;
+  };
+
+  // Parse shipping address
+  const parseAddress = (addressString: string) => {
+    try {
+      const address = JSON.parse(addressString);
+      return address;
+    } catch {
+      return null;
+    }
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="container mx-auto px-4 py-16 text-center">
-          <Package className="w-16 h-16 text-gray-300 mx-auto mb-6" />
+          <Package className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-6" />
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
             Please login to view your orders
           </h2>
@@ -284,6 +222,16 @@ const OrdersPage = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
+            <div className="flex items-center gap-2 text-red-700 dark:text-red-400">
+              <AlertCircle size={20} />
+              <p className="font-medium">{error}</p>
+            </div>
+          </div>
+        )}
+
         {/* Filters and Search */}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row gap-4 justify-between">
@@ -302,16 +250,22 @@ const OrdersPage = () => {
                 Last 30 Days
               </button>
               <button
+                onClick={() => setActiveFilter('pending')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeFilter === 'pending' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+              >
+                Pending
+              </button>
+              <button
+                onClick={() => setActiveFilter('processing')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeFilter === 'processing' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+              >
+                Processing
+              </button>
+              <button
                 onClick={() => setActiveFilter('delivered')}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeFilter === 'delivered' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
               >
                 Delivered
-              </button>
-              <button
-                onClick={() => setActiveFilter('shipped')}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeFilter === 'shipped' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
-              >
-                Shipped
               </button>
             </div>
 
@@ -320,7 +274,7 @@ const OrdersPage = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
               <input
                 type="text"
-                placeholder="Search orders..."
+                placeholder="Search by order number, name, or products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -356,12 +310,14 @@ const OrdersPage = () => {
           <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
             <Package className="w-24 h-24 text-gray-300 dark:text-gray-600 mx-auto mb-6" />
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              {activeFilter === 'all' ? 'No orders yet' : 'No orders found'}
+              {searchQuery ? 'No orders found' : activeFilter === 'all' ? 'No orders yet' : `No ${activeFilter} orders`}
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
-              {activeFilter === 'all' 
-                ? "When you place orders, they'll appear here for easy tracking and management."
-                : "Try changing your filters or search for different orders."
+              {searchQuery 
+                ? "Try a different search term or clear the search filter."
+                : activeFilter === 'all' 
+                  ? "When you place orders, they'll appear here for easy tracking and management."
+                  : "You don't have any orders with this status."
               }
             </p>
             <Button asChild className="bg-green-600 hover:bg-green-700 text-white">
@@ -372,215 +328,280 @@ const OrdersPage = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            {filteredOrders.map((order) => (
-              <div 
-                key={order.$id}
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300 hover:shadow-md"
-              >
-                {/* Order Header */}
-                <div className="p-6">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                          Order #{order.orderNumber}
-                        </h3>
-                        <OrderStatusBadge status={order.orderStatus} />
-                      </div>
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                        <div className="flex items-center gap-1">
-                          <Calendar size={16} />
-                          <span>Placed on {formatDate(order.createdAt)}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Package size={16} />
-                          <span>{order.items?.length || 0} items</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <IndianRupee size={16} />
-                          <span className="font-medium">{order.totalAmount.toFixed(2)}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="hidden sm:inline-flex items-center gap-2"
-                        onClick={() => setExpandedOrder(expandedOrder === order.$id ? null : order.$id)}
-                      >
-                        {expandedOrder === order.$id ? 'Hide Details' : 'View Details'}
-                        <ChevronRight size={16} className={`transition-transform ${expandedOrder === order.$id ? 'rotate-90' : ''}`} />
-                      </Button>
-                      <Button
-                        size="sm"
-                        className="bg-green-600 hover:bg-green-700 text-white"
-                        asChild
-                      >
-                        <Link href={`/orders/${order.$id}`}>
-                          <Eye size={16} className="sm:hidden" />
-                          <span className="hidden sm:inline">View Order</span>
-                        </Link>
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Order Items Preview */}
-                <div className="px-6 pb-4">
-                  <div className="flex overflow-x-auto gap-4 pb-2">
-                    {order.items?.slice(0, 3).map((item, index) => (
-                      <div key={item.id} className="flex-shrink-0">
-                        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg min-w-[200px]">
-                          <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
-                            {item.image ? (
-                              <div className="w-full h-full bg-gray-300 dark:bg-gray-600 rounded" />
-                            ) : (
-                              <Package className="text-gray-400" size={20} />
-                            )}
-                          </div>
-                          <div>
-                            <p className="font-medium text-sm text-gray-900 dark:text-white line-clamp-1">
-                              {item.productName}
-                            </p>
-                            <p className="text-xs text-gray-600 dark:text-gray-400">
-                              Qty: {item.quantity} × ₹{item.price}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                    {order.items && order.items.length > 3 && (
-                      <div className="flex-shrink-0">
-                        <div className="flex items-center justify-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg min-w-[200px]">
-                          <span className="text-gray-600 dark:text-gray-400">
-                            +{order.items.length - 3} more items
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Expanded Details */}
-                {expandedOrder === order.$id && (
-                  <div className="border-t border-gray-200 dark:border-gray-700 p-6 bg-gray-50 dark:bg-gray-900/50">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Order Items Details */}
+            {filteredOrders.map((order) => {
+              const parsedAddress = parseAddress(order.shippingAddress);
+              const totalItems = order.items.length;
+              
+              return (
+                <div 
+                  key={order.$id}
+                  className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300 hover:shadow-md"
+                >
+                  {/* Order Header */}
+                  <div className="p-6">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div>
-                        <h4 className="font-medium text-gray-900 dark:text-white mb-3">Order Items</h4>
-                        <div className="space-y-3">
-                          {order.items?.map((item) => (
-                            <div key={item.id} className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg">
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
-                                  <Package size={16} className="text-gray-400" />
-                                </div>
-                                <div>
-                                  <p className="font-medium text-sm text-gray-900 dark:text-white">
-                                    {item.productName}
-                                  </p>
-                                  <p className="text-xs text-gray-600 dark:text-gray-400">
-                                    Qty: {item.quantity}
-                                  </p>
-                                </div>
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                            Order #{order.orderNumber}
+                          </h3>
+                          <OrderStatusBadge status={order.orderStatus} />
+                        </div>
+                        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                          <div className="flex items-center gap-1">
+                            <Calendar size={16} />
+                            <span>Placed on {formatDate(order.$createdAt)} at {formatTime(order.$createdAt)}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Package size={16} />
+                            <span>{totalItems} item{totalItems !== 1 ? 's' : ''}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <IndianRupee size={16} />
+                            <span className="font-medium">₹{order.totalAmount.toFixed(2)}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="hidden sm:inline-flex items-center gap-2"
+                          onClick={() => setExpandedOrder(expandedOrder === order.$id ? null : order.$id)}
+                        >
+                          {expandedOrder === order.$id ? 'Hide Details' : 'View Details'}
+                          <ChevronRight size={16} className={`transition-transform ${expandedOrder === order.$id ? 'rotate-90' : ''}`} />
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                          asChild
+                        >
+                          <Link href={`/orders/${order.$id}`}>
+                            <Eye size={16} className="sm:hidden" />
+                            <span className="hidden sm:inline">View Order</span>
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Order Items Preview */}
+                  {totalItems > 0 && (
+                    <div className="px-6 pb-4">
+                      <div className="flex overflow-x-auto gap-4 pb-2">
+                        {order.items.slice(0, 3).map((item) => (
+                          <div key={item.$id} className="flex-shrink-0">
+                            <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg min-w-[200px]">
+                              <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center overflow-hidden">
+                                {item.image ? (
+                                  <div className="relative w-full h-full">
+                                    <Image
+                                      src={item.image}
+                                      alt={item.productName}
+                                      fill
+                                      className="object-cover"
+                                      sizes="48px"
+                                    />
+                                  </div>
+                                ) : (
+                                  <ImageIcon className="text-gray-400" size={20} />
+                                )}
                               </div>
-                              <div className="text-right">
-                                <p className="font-medium text-gray-900 dark:text-white">
-                                  ₹{item.totalPrice.toFixed(2)}
+                              <div>
+                                <p className="font-medium text-sm text-gray-900 dark:text-white line-clamp-1">
+                                  {item.productName}
                                 </p>
                                 <p className="text-xs text-gray-600 dark:text-gray-400">
-                                  ₹{item.price} each
+                                  Qty: {item.quantity} × ₹{item.price.toFixed(2)}
                                 </p>
                               </div>
                             </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Order Summary */}
-                      <div>
-                        <h4 className="font-medium text-gray-900 dark:text-white mb-3">Order Summary</h4>
-                        <div className="space-y-3 p-4 bg-white dark:bg-gray-800 rounded-lg">
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600 dark:text-gray-400">Subtotal:</span>
-                            <span>₹{(order.totalAmount - order.shippingCost - order.taxAmount + order.discountedAmount).toFixed(2)}</span>
                           </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600 dark:text-gray-400">Shipping:</span>
-                            <span>₹{order.shippingCost.toFixed(2)}</span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600 dark:text-gray-400">Tax:</span>
-                            <span>₹{order.taxAmount.toFixed(2)}</span>
-                          </div>
-                          {order.discountedAmount > 0 && (
-                            <div className="flex justify-between text-sm">
-                              <span className="text-gray-600 dark:text-gray-400">Discount:</span>
-                              <span className="text-green-600">-₹{order.discountedAmount.toFixed(2)}</span>
+                        ))}
+                        {totalItems > 3 && (
+                          <div className="flex-shrink-0">
+                            <div className="flex items-center justify-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg min-w-[200px]">
+                              <span className="text-gray-600 dark:text-gray-400">
+                                +{totalItems - 3} more items
+                              </span>
                             </div>
-                          )}
-                          <Separator />
-                          <div className="flex justify-between font-semibold">
-                            <span className="text-gray-900 dark:text-white">Total:</span>
-                            <span className="text-green-600">₹{order.totalAmount.toFixed(2)}</span>
                           </div>
-                        </div>
-
-                        {/* Shipping Info */}
-                        <div className="mt-4 p-4 bg-white dark:bg-gray-800 rounded-lg">
-                          <h5 className="font-medium text-gray-900 dark:text-white mb-2">Shipping Address</h5>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            {order.address}
-                          </p>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            Phone: {order.customerPhone}
-                          </p>
-                        </div>
+                        )}
                       </div>
                     </div>
+                  )}
 
-                    {/* Actions */}
-                    <div className="flex flex-wrap gap-3 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex items-center gap-2"
-                      >
-                        <Download size={16} />
-                        Invoice
-                      </Button>
-                      {order.orderStatus === 'delivered' && (
+                  {/* Expanded Details */}
+                  {expandedOrder === order.$id && (
+                    <div className="border-t border-gray-200 dark:border-gray-700 p-6 bg-gray-50 dark:bg-gray-900/50">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Order Items Details */}
+                        <div>
+                          <h4 className="font-medium text-gray-900 dark:text-white mb-3">Order Items</h4>
+                          {totalItems > 0 ? (
+                            <div className="space-y-3">
+                              {order.items.map((item) => (
+                                <div key={item.$id} className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center overflow-hidden">
+                                      {item.image ? (
+                                        <div className="relative w-full h-full">
+                                          <Image
+                                            src={item.image}
+                                            alt={item.productName}
+                                            fill
+                                            className="object-cover"
+                                            sizes="40px"
+                                          />
+                                        </div>
+                                      ) : (
+                                        <ImageIcon size={16} className="text-gray-400" />
+                                      )}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="font-medium text-sm text-gray-900 dark:text-white truncate">
+                                        {item.productName}
+                                      </p>
+                                      <p className="text-xs text-gray-600 dark:text-gray-400">
+                                        Product ID: {item.productId} • Qty: {item.quantity}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="text-right whitespace-nowrap">
+                                    <p className="font-medium text-gray-900 dark:text-white">
+                                      ₹{item.totalPrice.toFixed(2)}
+                                    </p>
+                                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                                      ₹{item.price.toFixed(2)} each
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-center py-8 bg-white dark:bg-gray-800 rounded-lg">
+                              <Package className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                              <p className="text-gray-600 dark:text-gray-400">
+                                No items found for this order
+                              </p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Order Summary */}
+                        <div>
+                          <h4 className="font-medium text-gray-900 dark:text-white mb-3">Order Summary</h4>
+                          <div className="space-y-3 p-4 bg-white dark:bg-gray-800 rounded-lg">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600 dark:text-gray-400">Subtotal:</span>
+                              <span>₹{calculateSubtotal(order).toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600 dark:text-gray-400">Shipping:</span>
+                              <span>₹{order.shippingCost.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600 dark:text-gray-400">Tax:</span>
+                              <span>₹{order.taxAmount.toFixed(2)}</span>
+                            </div>
+                            {order.discountedAmount > 0 && (
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600 dark:text-gray-400">Discount:</span>
+                                <span className="text-green-600 dark:text-green-400">-₹{order.discountedAmount.toFixed(2)}</span>
+                              </div>
+                            )}
+                            <Separator />
+                            <div className="flex justify-between font-semibold">
+                              <span className="text-gray-900 dark:text-white">Total:</span>
+                              <span className="text-green-600 dark:text-green-400">₹{order.totalAmount.toFixed(2)}</span>
+                            </div>
+                          </div>
+
+                          {/* Shipping Info */}
+                          <div className="mt-4 p-4 bg-white dark:bg-gray-800 rounded-lg">
+                            <h5 className="font-medium text-gray-900 dark:text-white mb-2">Shipping Details</h5>
+                            {parsedAddress ? (
+                              <>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  {parsedAddress.house}, {parsedAddress.area}
+                                </p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  {parsedAddress.addressLine}
+                                </p>
+                                {parsedAddress.landmark && (
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                                    Near {parsedAddress.landmark}
+                                  </p>
+                                )}
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  {parsedAddress.city}, {parsedAddress.state} - {parsedAddress.pincode}
+                                </p>
+                              </>
+                            ) : (
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {order.address}
+                              </p>
+                            )}
+                            <div className="mt-2 space-y-1">
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                Phone: {order.customerPhone}
+                              </p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                Email: {order.customerEmail}
+                              </p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                Payment: {order.paymentMethod.toUpperCase()} • 
+                                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-medium ${
+                                  order.paymentStatus === 'paid' 
+                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                    : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                }`}>
+                                  {order.paymentStatus}
+                                </span>
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex flex-wrap gap-3 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+
+                        {order.orderStatus === 'delivered' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex items-center gap-2"
+                          >
+                            <RefreshCw size={16} />
+                            Return/Replace
+                          </Button>
+                        )}
                         <Button
                           variant="outline"
                           size="sm"
                           className="flex items-center gap-2"
                         >
-                          <RefreshCw size={16} />
-                          Return/Replace
+                          <Truck size={16} />
+                          Track Order
                         </Button>
-                      )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex items-center gap-2"
-                      >
-                        <Truck size={16} />
-                        Track Order
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex items-center gap-2 ml-auto"
-                      >
-                        <Eye size={16} />
-                        View Full Details
-                      </Button>
+                        <Button
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2 ml-auto"
+                          asChild
+                        >
+                          <Link href={`/orders/${order.$id}`}>
+                            <Eye size={16} />
+                            View Full Details
+                          </Link>
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            ))}
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
 
@@ -602,16 +623,16 @@ const OrdersPage = () => {
               </div>
               <div className="text-center">
                 <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <RefreshCw className="text-green-600 dark:text-green-400" size={24} />
+                  <HelpCircle className="text-green-600 dark:text-green-400" size={24} />
                 </div>
-                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Returns & Refunds</h4>
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Customer Support</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  30-day return policy on most items
+                  24/7 support for order-related queries
                 </p>
               </div>
               <div className="text-center">
                 <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <AlertCircle className="text-green-600 dark:text-green-400" size={24} />
+                  <Phone className="text-green-600 dark:text-green-400" size={24} />
                 </div>
                 <h4 className="font-medium text-gray-900 dark:text-white mb-2">Need Help?</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400">

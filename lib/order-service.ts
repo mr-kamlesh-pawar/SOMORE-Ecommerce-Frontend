@@ -1,10 +1,14 @@
 // lib/order-service.ts
 import { databases, } from "@/lib/appwrite";
 import { ID, Query } from "appwrite";
+import { Models } from 'appwrite';
+import { getAppwriteImageUrl } from "./appwriteImage";
 
 const DB_ID = process.env.NEXT_PUBLIC_APPWRITE_DB_ID!;
 const ORDERS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_ORDERS_COLLECTION_ID!;
 const ORDER_ITEMS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_ORDER_ITEMS_COLLECTION_ID!;
+const PRODUCTS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_PRODUCTS_COLLECTION_ID!;
+
 
 interface CartItem {
   id: string;
@@ -92,7 +96,7 @@ export async function createOrder(orderData: OrderData) {
     ORDER_ITEMS_COLLECTION_ID,
     ID.unique(),
     {
-      orderId: [orderDoc.$id], // Wrap in array for relationship
+      orderId: orderDoc.$id, 
       productId: item.productId,
       productName: item.name,
       price: item.price,
@@ -121,7 +125,7 @@ export async function createOrder(orderData: OrderData) {
 }
 
 // Get user orders
-export async function getUserOrders(userId: string) {
+export async function getUserOrders1(userId: string) {
   try {
     const orders = await databases.listDocuments(
       DB_ID,
@@ -235,5 +239,160 @@ export async function updatePaymentStatus(orderId: string, status: string) {
   } catch (error) {
     console.error('Error updating payment status:', error);
     return { success: false, error: 'Failed to update payment status' };
+  }
+}
+
+
+export interface OrderItem extends Models.Document {
+  productName: string;
+  price: number;
+  quantity: number;
+  orderId: string[];
+  productId: string;
+  totalPrice: number;
+  image?: string; 
+}
+
+export interface Order extends Models.Document {
+  orderNumber: string;
+  userId: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  shippingAddress: string; // JSON string
+  address: string;
+  paymentMethod: string;
+  shippingCost: number;
+  taxAmount: number;
+  discountedAmount: number;
+  totalAmount: number;
+  orderStatus: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
+  notes: string;
+}
+
+// Get orders for a user
+export async function getUserOrders(userId: string): Promise<Order[]> {
+  try {
+    const response = await databases.listDocuments(
+      DB_ID,
+      ORDERS_COLLECTION_ID,
+      [
+        Query.equal('userId', userId),
+        Query.orderDesc('$createdAt')
+      ]
+    );
+    
+    return response.documents as unknown as Order[];
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    return [];
+  }
+}
+
+// lib/order-service.ts - Fix the getOrderItems function
+
+// Get order items with product images - OPTIMIZED VERSION
+export async function getOrderItems(orderId: string): Promise<OrderItem[]> {
+  try {
+    const response = await databases.listDocuments(
+      DB_ID,
+      ORDER_ITEMS_COLLECTION_ID,
+      [Query.startsWith('orderId', orderId)]
+    );
+    
+    if (response.documents.length === 0) {
+      return [];
+    }
+    
+    // Get all unique product IDs
+    const productIds =  Array.from(new Set(response.documents.map(item => item.productId)));
+
+    // Fetch all products at once (single API call)
+    const productsResponse = await databases.listDocuments(
+      DB_ID,
+      PRODUCTS_COLLECTION_ID,
+      [Query.equal('$id', productIds)]
+    ).catch(() => ({ documents: [] }));
+    
+    // Create a map of productId -> product data for quick lookup
+    const productMap = new Map();
+    productsResponse.documents.forEach(product => {
+      productMap.set(product.$id, {
+        image: product.image,
+        images: product.images,
+        updatedAt: product.$updatedAt
+      });
+    });
+    
+    // Process items with image URLs - NO async operations here
+    const itemsWithImages = response.documents.map(item => {
+      const productData = productMap.get(item.productId);
+      
+      return {
+        ...item,
+        image: productData ? 
+          getAppwriteImageUrl(productData.image || productData.images?.[0], productData.updatedAt) 
+          : null
+      };
+    });
+    
+    return itemsWithImages as unknown as OrderItem[];
+  } catch (error) {
+    console.error('Error fetching order items:', error);
+    return [];
+  }
+}
+
+// Get complete order with items
+export async function getOrderWithItems(orderId: string): Promise<{
+  order: Order | null;
+  items: OrderItem[];
+}> {
+  try {
+    const [order, items] = await Promise.all([
+      databases.getDocument(DB_ID, ORDERS_COLLECTION_ID, orderId),
+      getOrderItems(orderId)
+    ]);
+    
+    return {
+      order: order as unknown as Order,
+      items
+    };
+  } catch (error) {
+    console.error('Error fetching order with items:', error);
+    return { order: null, items: [] };
+  }
+}
+
+// Get all user orders with items
+export async function getUserOrdersWithItems(userId: string): Promise<(Order & { items?: OrderItem[] })[]> {
+  try {
+    const orders = await getUserOrders(userId);
+    
+    // Fetch items for each order
+    const ordersWithItems = await Promise.all(
+      orders.map(async (order) => {
+        const items = await getOrderItems(order.$id);
+        return {
+          ...order,
+          items
+        };
+      })
+    );
+    
+    return ordersWithItems;
+  } catch (error) {
+    console.error('Error fetching orders with items:', error);
+    return [];
+  }
+}
+
+// Parse shipping address from JSON string
+export function parseShippingAddress(shippingAddress: string): any {
+  try {
+    return JSON.parse(shippingAddress);
+  } catch {
+    return {};
   }
 }
