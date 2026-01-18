@@ -13,12 +13,13 @@ interface Announcement {
 const announcements: Announcement[] = [
   {
     id: 1,
-    message: "Extra 10% OFF on your order. Use Coupon : SV10",
+    message: "Extra 10% OFF on your order. Order Now",
+    link: "/products",
   },
   {
     id: 2,
     message: "Buy 2, Get 1 FREE - SPECIAL DISCOUNT",
-    link: "/collections/b2g1",
+    link: "/products",
   },
 ];
 

@@ -20,6 +20,7 @@ const config: Config = {
       },
     },
     extend: {
+      
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -63,6 +64,11 @@ const config: Config = {
       },
 
       keyframes: {
+          'slide-left': {
+        'from': { transform: 'translateX(100%)' },
+        'to': { transform: 'translateX(0)' },
+      },
+
         "accordion-down": {
           from: { height: "0" },
           to: { height: "var(--radix-accordion-content-height)" },
@@ -76,6 +82,7 @@ const config: Config = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+          'slide-left': 'slide-left 0.3s ease-out',
       },
     },
   },

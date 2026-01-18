@@ -19,15 +19,15 @@ export default function HerbalSection() {
         process.env.NEXT_PUBLIC_APPWRITE_PRODUCTS_COLLECTION_ID!,
         [
           Query.equal("isActive", true),
-          Query.equal("homeSection", "herbal"),
+          Query.equal("istopselling", true),
           Query.orderDesc("$createdAt"),
-          Query.limit(8), // full herbal page
+          Query.limit(8), 
         ]
       );
-
+        console.log("top selling producs ", res);
       setProducts(res.documents);
     } catch (err) {
-      console.error("Herbal page fetch error:", err);
+      console.error(" page fetch error:", err);
     } finally {
       setLoading(false);
     }
@@ -41,7 +41,7 @@ export default function HerbalSection() {
 
   return (
     <FeaturedCollection
-      title="Herbal Products & Supplements"
+      title="Top Selling Products & Supplements"
       products={products.map((p) => ({
         id: p.$id,
         title: p.name,
@@ -56,7 +56,7 @@ export default function HerbalSection() {
           ? `₹${p.marketprice}`
           : undefined,
       }))}
-      viewAllUrl="" // already on herbal page
+      viewAllUrl="/products?category=Top"
     />
   );
 }

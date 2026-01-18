@@ -53,7 +53,7 @@ export default function NewLaunchesSection() {
 
         isHome: true,
       }))}
-      viewAllLink="/collections/moringa-products"
+      viewAllLink="/products?category=New"
     />
   );
 }

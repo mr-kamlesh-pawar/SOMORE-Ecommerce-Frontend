@@ -84,6 +84,6 @@ function NewLaunchesSection() {
                 })
                 : ["/images/placeholder.png"],
             isHome: true
-        }); }), viewAllLink: "/collections/moringa-products" }));
+        }); }), viewAllLink: "/products?category=New" }));
 }
 exports["default"] = NewLaunchesSection;

@@ -282,22 +282,34 @@ const handleDownloadInvoice = async () => {
                 <Share2 size={16} />
                 Share
               </Button>
-              <Button
+
+
+                 <Button
                 variant="outline"
-                size="sm"
                 className="flex items-center gap-2"
-              >
-                <Printer size={16} />
-                Print
-              </Button>
-              <Button
+                size="sm"
+                onClick={handleDownloadInvoice}
+                disabled={downloadingInvoice}
+                >
+                 <Printer size={16} />
+                 Print
+                </Button>
+
+
+   <Button
                 variant="outline"
+                 className="flex items-center gap-2"
                 size="sm"
-                className="flex items-center gap-2"
-              >
-                <Download size={16} />
-                Invoice
-              </Button>
+                onClick={handleDownloadInvoice}
+                disabled={downloadingInvoice}
+                >
+                  <Download size={16} />
+                {downloadingInvoice ? 'Generating...' : 'Invoice'}
+                </Button>
+
+
+
+
             </div>
           </div>
         </div>

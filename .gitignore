@@ -22,6 +22,9 @@
 **/dist
 */dist
 
+components/**/dist/
+lib/dist/
+
 # misc
 .DS_Store
 *.pem

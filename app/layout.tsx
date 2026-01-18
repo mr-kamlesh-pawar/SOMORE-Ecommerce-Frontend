@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Poppins as FontSans } from "next/font/google";
+// @ts-ignore - CSS import
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/providers/ThemeProvider";

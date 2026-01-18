@@ -23,13 +23,12 @@ export const footerData = {
   ],
 
   company: [
-    { id: 1, label: "About Us", url: "/pages/about-us" },
-    { id: 2, label: "Blog", url: "/pages/blog-sitemap" },
-    { id: 3, label: "Contact Us", url: "/pages/contact-us" },
+    { id: 1, label: "About Us", url: "/pages/about" },
+    { id: 3, label: "Contact Us", url: "/pages/contact" },
     { id: 4, label: "Shipping Policy", url: "/policies/shipping-policy" },
-    { id: 5, label: "Cancellation & Refund", url: "/pages/cancellation-refund" },
-    { id: 6, label: "Privacy Policy", url: "/pages/privacy-policy" },
-    { id: 7, label: "Terms & Conditions", url: "/pages/terms-conditions" },
+    { id: 5, label: "Cancellation & Refund", url: "/policies/cancellation-refund" },
+    { id: 6, label: "Privacy Policy", url: "/policies/privacy-policy" },
+    { id: 7, label: "Terms & Conditions", url: "/policies/terms-conditions" },
   ],
 
   support: {

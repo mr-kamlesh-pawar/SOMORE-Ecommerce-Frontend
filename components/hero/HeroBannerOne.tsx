@@ -76,7 +76,7 @@ export default function HeroBannerOne() {
           <CarouselContent>
             {banners.map((banner, index) => (
               <CarouselItem key={banner.$id}>
-                <Link href="#" className="block w-full">
+                <Link href="/products" className="block w-full">
                   <div
                     className="
                       relative w-full 

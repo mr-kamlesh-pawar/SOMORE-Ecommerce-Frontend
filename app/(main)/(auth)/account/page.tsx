@@ -818,10 +818,10 @@ const handleLogout = async () => {
               <h2 className="text-xl lg:text-2xl font-semibold mb-6">Setting</h2>
               <div className="text-center py-12">
                 <Settings size={64} className="text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-600 text-lg mb-2">No developed yet</p>
+               
                 <p className="text-gray-500 mb-6">Click on change password</p>
                 <button
-                  onClick={() => router.push("/")}
+                  onClick={() => router.push("/forgot-password")}
                   className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors"
                 >
                   Change Password

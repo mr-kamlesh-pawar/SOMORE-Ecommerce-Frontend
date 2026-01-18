@@ -95,6 +95,6 @@ function OrganicSection() {
                     ? "\u20B9" + p.marketprice
                     : undefined
             });
-        }), viewAllUrl: "/collections/organic-powders" }));
+        }), viewAllUrl: "/products?category=Organic" }));
 }
 exports["default"] = OrganicSection;

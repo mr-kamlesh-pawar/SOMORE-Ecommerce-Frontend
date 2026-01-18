@@ -99,7 +99,7 @@ var OrderSummaryForCheckout = function () {
     // Validate cart items on mount
     react_1.useEffect(function () {
         if (cartCount === 0 && isMounted) {
-            react_hot_toast_1["default"].error("Your cart is empty");
+            // toast.error("Your cart is empty");
             router.push('/cart');
         }
     }, [cartCount, isMounted, router]);

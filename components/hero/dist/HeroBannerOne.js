@@ -99,7 +99,7 @@ function HeroBannerOne() {
                     }),
                 ] },
                 react_1["default"].createElement(carousel_1.CarouselContent, null, banners.map(function (banner, index) { return (react_1["default"].createElement(carousel_1.CarouselItem, { key: banner.$id },
-                    react_1["default"].createElement(link_1["default"], { href: "#", className: "block w-full" },
+                    react_1["default"].createElement(link_1["default"], { href: "/products", className: "block w-full" },
                         react_1["default"].createElement("div", { className: "\r\n                      relative w-full \r\n                      h-[30vh] sm:h-[35vh] md:h-[45vh] \r\n                      lg:h-[110vh]\r\n                    " },
                             react_1["default"].createElement(image_1["default"], { src: appwriteImage_1.getAppwriteImageUrl(banner.bannerimg, banner.$updatedAt), alt: banner.name, fill: true, priority: index === 0, className: "object-contain lg:object-cover", unoptimized: true }))))); })))),
         react_1["default"].createElement("div", { className: "w-full flex justify-center py-3 gap-3" }, banners.map(function (_, i) { return (react_1["default"].createElement("button", { key: i, onClick: function () { return api === null || api === void 0 ? void 0 : api.scrollTo(i); }, className: "w-2 h-2 rounded-full transition " + (i === current ? "bg-black scale-125" : "bg-gray-400"), "aria-label": "Go to slide " + (i + 1) })); }))));

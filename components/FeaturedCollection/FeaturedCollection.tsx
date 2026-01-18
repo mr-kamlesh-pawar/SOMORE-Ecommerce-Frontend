@@ -128,13 +128,42 @@ function ProductCard({ product }: { product: Product }) {
         </h3>
 
         {/* RATING */}
-        {product.rating && (
-          <div className="flex justify-center items-center gap-2 text-sm mt-2">
-            <span className="text-yellow-500">★★★★★</span>
-            <span className="text-black">{product.rating}</span>
-            <span className="text-gray-500">({product.ratingCount})</span>
-          </div>
-        )}
+    
+
+{/* RATING */}
+<div className="flex justify-center items-center gap-2 text-sm mt-2">
+  {/* Show stars based on rating */}
+  <div className="flex">
+    {[1, 2, 3, 4, 5].map((star) => (
+      <span
+        key={star}
+        className={
+          product.rating && star <= Math.round(product.rating)
+            ? 'text-yellow-500'
+            : 'text-gray-300'
+        }
+      >
+        ★
+      </span>
+    ))}
+  </div>
+  
+  {/* Show rating number if it exists */}
+  {product.rating ? (
+    <>
+      <span className="text-black">{product.rating.toFixed(1)}</span>
+      {product.ratingCount && product.ratingCount > 0 && (
+        <span className="text-gray-500">({product.ratingCount})</span>
+      )}
+    </>
+  ) : product.ratingCount && product.ratingCount > 0 ? (
+    // Only show review count if no rating
+    <span className="text-gray-500 text-xs">({product.ratingCount})</span>
+  ) : (
+    // Show nothing or "No reviews" if you prefer
+    null
+  )}
+</div>
 
         {/* PRICE */}
         <div className="mt-2 flex justify-center items-center gap-3 text-[15px]">

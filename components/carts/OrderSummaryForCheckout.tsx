@@ -116,7 +116,7 @@ const OrderSummaryForCheckout = () => {
   // Validate cart items on mount
   useEffect(() => {
     if (cartCount === 0 && isMounted) {
-      toast.error("Your cart is empty");
+     // toast.error("Your cart is empty");
       router.push('/cart');
     }
   }, [cartCount, isMounted, router]);

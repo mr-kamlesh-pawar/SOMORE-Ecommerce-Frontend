@@ -12,6 +12,90 @@ import SuggestedProduct from "@/components/others/SuggestedProduct";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import ProductDetailsSkeleton from "@/components/skeleton/ProductDetailsSkeleton";
+import Head from "next/head";
+import RecommandedProducts from "../RecommandedProducts";
+
+// Helper functions for structured data
+const generateProductStructuredData = (product: any) => {
+  if (!product) return null;
+  
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.title || product.name,
+    description: product.shortDescription || "",
+    image: product.images || [],
+    brand: {
+      "@type": "Brand",
+      name: "Somore Pure",
+    },
+    offers: {
+      "@type": "Offer",
+      priceCurrency: "INR",
+      price: product.price.toString(),
+      availability: product.stock > 0 
+        ? "https://schema.org/InStock" 
+        : "https://schema.org/OutOfStock",
+      url: typeof window !== 'undefined' 
+        ? `${window.location.origin}/products/${product.slug}`
+        : `https://yourdomain.com/products/${product.slug}`,
+      seller: {
+        "@type": "Organization",
+        name: "Somore Pure",
+      },
+    },
+    ...(product.rating?.stars && {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: product.rating.stars.toString(),
+        reviewCount: (product.rating.reviews || 0).toString(),
+        bestRating: "5",
+        worstRating: "1",
+      },
+    }),
+  };
+};
+
+const generateBreadcrumbStructuredData = (product: any) => {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: typeof window !== 'undefined' 
+          ? window.location.origin 
+          : "https://yourdomain.com",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Shop",
+        item: typeof window !== 'undefined' 
+          ? `${window.location.origin}/shop`
+          : "https://yourdomain.com/shop",
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: product.category || "Products",
+        item: typeof window !== 'undefined' 
+          ? `${window.location.origin}/shop?category=${product.category}`
+          : `https://yourdomain.com/shop?category=${product.category}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 4,
+        name: product.title || product.name,
+        item: typeof window !== 'undefined' 
+          ? window.location.href 
+          : `https://yourdomain.com/products/${product.slug}`,
+      },
+    ],
+  };
+};
 
 export default function ProductDetailsPage() {
   const MAX_QTY_PER_PRODUCT = 7;
@@ -27,6 +111,60 @@ export default function ProductDetailsPage() {
   const [showSticky, setShowSticky] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState<number[]>([]);
 
+  /* ================= UPDATE SEO TAGS ================= */
+  useEffect(() => {
+    if (!product) return;
+
+    // Update document title
+    document.title = `${product.title} | Your Store`;
+    
+    // Update meta description
+    let metaDescription = document.querySelector('meta[name="description"]');
+    if (!metaDescription) {
+      metaDescription = document.createElement('meta');
+      metaDescription.setAttribute('name', 'description');
+      document.head.appendChild(metaDescription);
+    }
+    const description = product.description?.replace(/<[^>]*>/g, '').substring(0, 160) || 'Check out this amazing product';
+    metaDescription.setAttribute('content', description);
+    
+    // Update Open Graph tags
+    const updateMetaTag = (property: string, content: string) => {
+      let meta = document.querySelector(`meta[property="${property}"]`);
+      if (!meta) {
+        meta = document.createElement('meta');
+        meta.setAttribute('property', property);
+        document.head.appendChild(meta);
+      }
+      meta.setAttribute('content', content);
+    };
+    
+    updateMetaTag('og:title', product.title);
+    updateMetaTag('og:description', description);
+    updateMetaTag('og:image', product.images?.[0] || '/images/placeholder.png');
+    updateMetaTag('og:url', window.location.href);
+    updateMetaTag('og:type', 'product');
+    updateMetaTag('product:price:amount', product.price.toString());
+    updateMetaTag('product:price:currency', 'INR');
+    updateMetaTag('product:availability', product.stock > 0 ? 'in stock' : 'out of stock');
+    
+    // Update canonical URL
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute('href', window.location.href);
+    
+    // Update Twitter cards
+    updateMetaTag('twitter:card', 'summary_large_image');
+    updateMetaTag('twitter:title', product.title);
+    updateMetaTag('twitter:description', description);
+    updateMetaTag('twitter:image', product.images?.[0] || '/images/placeholder.png');
+    
+  }, [product]);
+
   /* ================= OPTIMIZED DATA LOADING ================= */
   useEffect(() => {
     if (!slug) return;
@@ -34,7 +172,6 @@ export default function ProductDetailsPage() {
     const loadProductData = async () => {
       setLoading(true);
       try {
-        // Fetch product first (most important)
         const productData = await fetchProductBySlug(slug as string);
         
         if (!productData) {
@@ -43,7 +180,6 @@ export default function ProductDetailsPage() {
           return;
         }
 
-        // Map product data immediately
         const mappedProduct = {
           ...productData,
           title: productData.name,
@@ -60,14 +196,12 @@ export default function ProductDetailsPage() {
         };
 
         setProduct(mappedProduct);
-        setLoading(false); // Show page as soon as product data is ready
+        setLoading(false);
 
-        // Fetch offer in background (less critical)
         fetchActiveOffer().then(offerData => {
           setOffer(offerData);
         }).catch(error => {
           console.error("Failed to load offer:", error);
-          // Silently fail for offers, they're not critical
         });
 
       } catch (error) {
@@ -195,8 +329,70 @@ export default function ProductDetailsPage() {
     );
   }
 
+  // Generate structured data
+  const productStructuredData = generateProductStructuredData(product);
+  const breadcrumbStructuredData = generateBreadcrumbStructuredData(product);
+
   return (
     <>
+
+      {/* Head component for SEO */}
+      <Head>
+        <title>{product.title} | Your Store</title>
+        <meta 
+          name="description" 
+          content={product.description?.replace(/<[^>]*>/g, '').substring(0, 160) || 'Check out this amazing product'} 
+        />
+        <meta name="keywords" content={`${product.title}, buy online, natural products`} />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content={product.title} />
+        <meta 
+          property="og:description" 
+          content={product.description?.replace(/<[^>]*>/g, '').substring(0, 160) || ''} 
+        />
+        <meta property="og:image" content={product.images?.[0] || '/images/placeholder.png'} />
+        <meta property="og:url" content={`https://yourdomain.com/products/${product.slug}`} />
+        <meta property="og:type" content="product" />
+        <meta property="product:price:amount" content={product.price.toString()} />
+        <meta property="product:price:currency" content="INR" />
+        <meta property="product:availability" content={product.stock > 0 ? 'in stock' : 'out of stock'} />
+        
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={product.title} />
+        <meta 
+          name="twitter:description" 
+          content={product.description?.replace(/<[^>]*>/g, '').substring(0, 160) || ''} 
+        />
+        <meta name="twitter:image" content={product.images?.[0] || '/images/placeholder.png'} />
+        
+        {/* Canonical */}
+        <link rel="canonical" href={`https://yourdomain.com/products/${product.slug}`} />
+        
+        {/* Robots */}
+        <meta name="robots" content="index, follow" />
+        
+        {/* Structured Data (JSON-LD) */}
+        {productStructuredData && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(productStructuredData)
+            }}
+          />
+        )}
+        
+        {breadcrumbStructuredData && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(breadcrumbStructuredData)
+            }}
+          />
+        )}
+      </Head>
+      
       {/* ---------------- MAIN PRODUCT SECTION ---------------- */}
       <section className="max-w-[1500px] mx-auto px-4 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -445,11 +641,7 @@ export default function ProductDetailsPage() {
         <ReviewSection />
       </div>
       <div className="mt-16">
-        <FeaturedCollection
-          title="Best Online Store for Herbal Products and Supplements"
-          products={herbalProducts}
-          viewAllUrl="/collections/herbal"
-        />
+         <RecommandedProducts />
       </div>
       <div className="mt-16">
         <SuggestedProduct />
@@ -457,3 +649,4 @@ export default function ProductDetailsPage() {
     </>
   );
 }
+

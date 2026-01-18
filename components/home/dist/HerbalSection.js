@@ -55,17 +55,18 @@ function HerbalSection() {
                         _a.trys.push([0, 2, 3, 4]);
                         return [4 /*yield*/, appwrite_1.databases.listDocuments(process.env.NEXT_PUBLIC_APPWRITE_DB_ID, process.env.NEXT_PUBLIC_APPWRITE_PRODUCTS_COLLECTION_ID, [
                                 appwrite_2.Query.equal("isActive", true),
-                                appwrite_2.Query.equal("homeSection", "herbal"),
+                                appwrite_2.Query.equal("istopselling", true),
                                 appwrite_2.Query.orderDesc("$createdAt"),
                                 appwrite_2.Query.limit(8),
                             ])];
                     case 1:
                         res = _a.sent();
+                        console.log("top selling producs ", res);
                         setProducts(res.documents);
                         return [3 /*break*/, 4];
                     case 2:
                         err_1 = _a.sent();
-                        console.error("Herbal page fetch error:", err_1);
+                        console.error(" page fetch error:", err_1);
                         return [3 /*break*/, 4];
                     case 3:
                         setLoading(false);
@@ -80,7 +81,7 @@ function HerbalSection() {
     }, []);
     if (loading)
         return React.createElement(NewLaunchesSkeleton_1["default"], null);
-    return (React.createElement(FeaturedCollection_1["default"], { title: "Herbal Products & Supplements", products: products.map(function (p) {
+    return (React.createElement(FeaturedCollection_1["default"], { title: "Top Selling Products & Supplements", products: products.map(function (p) {
             var _a, _b;
             return ({
                 id: p.$id,
@@ -96,7 +97,6 @@ function HerbalSection() {
                     ? "\u20B9" + p.marketprice
                     : undefined
             });
-        }), viewAllUrl: "" // already on herbal page
-     }));
+        }), viewAllUrl: "/products?category=Top" }));
 }
 exports["default"] = HerbalSection;
